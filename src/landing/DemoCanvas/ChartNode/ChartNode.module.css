@@ -1,0 +1,153 @@
+.node {
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-node);
+  box-shadow: var(--pk-node-shadow);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  color: var(--pk-ink);
+  animation:
+    nodeIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    glowPop 0.9s ease-out 0.12s;
+}
+
+@keyframes nodeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* yellow spawn glow (chart type colour) */
+@keyframes glowPop {
+  0% {
+    box-shadow: var(--pk-node-shadow), 0 0 0 0 rgba(218, 230, 81, 0);
+  }
+  40% {
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 8px rgba(218, 230, 81, 0.3),
+      0 0 40px 4px rgba(218, 230, 81, 0.4);
+  }
+  100% {
+    box-shadow: var(--pk-node-shadow), 0 0 0 0 transparent;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  font-size: 12px;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+.head:active {
+  cursor: grabbing;
+}
+
+.typeDot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--pk-type-chart);
+  box-shadow: 0 0 8px var(--pk-type-chart);
+}
+
+.typeTag {
+  font: 500 12px var(--pk-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pk-ink);
+}
+
+.title {
+  margin-left: auto;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-ink-faint);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.cap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.capTitle {
+  font: 600 12px var(--pk-font-section);
+  color: var(--pk-ink);
+}
+.capMeta {
+  font: 400 10px var(--pk-font-mono);
+  color: var(--pk-ink-mute);
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 150px;
+}
+.axis {
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+}
+.tick {
+  fill: var(--pk-ink-faint);
+  font: 9px var(--pk-font-mono);
+}
+
+.bar,
+.barAlt {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: barGrow 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+.bar {
+  fill: var(--pk-yellow);
+  opacity: 0.85;
+}
+.barAlt {
+  fill: var(--pk-mauve);
+  opacity: 0.85;
+}
+@keyframes barGrow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}

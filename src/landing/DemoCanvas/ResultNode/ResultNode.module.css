@@ -1,0 +1,254 @@
+.node {
+  display: flex;
+  flex-direction: column;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-node);
+  box-shadow: var(--pk-node-shadow);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  color: var(--pk-ink);
+  animation:
+    nodeIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    glowPop 0.9s ease-out 0.12s;
+}
+
+@keyframes nodeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* green spawn glow (result type colour) */
+@keyframes glowPop {
+  0% {
+    box-shadow: var(--pk-node-shadow), 0 0 0 0 rgba(120, 200, 150, 0);
+  }
+  40% {
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 8px rgba(120, 200, 150, 0.3),
+      0 0 40px 4px rgba(120, 200, 150, 0.4);
+  }
+  100% {
+    box-shadow: var(--pk-node-shadow), 0 0 0 0 transparent;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  font-size: 12px;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+.head:active {
+  cursor: grabbing;
+}
+
+.typeDot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--pk-type-result);
+  box-shadow: 0 0 8px var(--pk-type-result);
+}
+
+.typeTag {
+  font: 500 12px var(--pk-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pk-ink);
+}
+
+.title {
+  margin-left: auto;
+  max-width: 62%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-ink-faint);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--pk-node-border);
+  background: rgba(0, 0, 0, 0.2);
+  font: 400 10.5px var(--pk-font-mono);
+  color: var(--pk-ink-mute);
+  flex-shrink: 0;
+}
+.ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pk-type-result);
+}
+.ok::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--pk-type-result);
+  box-shadow: 0 0 6px var(--pk-type-result);
+}
+.dim {
+  color: var(--pk-ink-mute);
+}
+.chartBtn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--pk-node-border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--pk-ink-2);
+  font: 500 10px var(--pk-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+.chartBtn:hover {
+  color: var(--pk-yellow);
+  border-color: rgba(218, 230, 81, 0.4);
+  background: rgba(218, 230, 81, 0.08);
+}
+.chartBtn svg {
+  width: 11px;
+  height: 11px;
+}
+
+.tableWrap {
+  overflow: hidden;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 11.5px var(--pk-font-mono);
+}
+.table thead {
+  background: rgba(0, 0, 0, 0.25);
+}
+.table th {
+  padding: 7px 12px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--pk-node-border);
+  color: var(--pk-ink-mute);
+  font-weight: 500;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.table th.numHead {
+  text-align: right;
+}
+.table td {
+  padding: 7px 12px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.04);
+  color: var(--pk-ink-2);
+}
+.pk {
+  color: rgb(186, 140, 240);
+}
+.fk {
+  color: var(--pk-blue);
+}
+.num {
+  text-align: right;
+  color: var(--pk-yellow);
+  font-variant-numeric: tabular-nums;
+}
+
+/* clickable "follow reference" id — distinct brighter colour + dotted underline,
+   and a one-shot flash that fires just after the row finishes animating in. */
+.refCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: inherit;
+  padding: 1px 7px;
+  border: 1px solid rgba(186, 140, 240, 0.45);
+  border-radius: 5px;
+  background: rgba(186, 140, 240, 0.16);
+  color: rgb(214, 182, 255);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+  /* one-shot attention flash just after the row animates in */
+  animation: idFlash 1s ease-out 0.45s 1 both;
+}
+.refCell:hover {
+  background: rgba(186, 140, 240, 0.32);
+  border-color: rgba(186, 140, 240, 0.85);
+  box-shadow: 0 0 12px rgba(186, 140, 240, 0.5);
+}
+.refIcon {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+@keyframes idFlash {
+  0%,
+  100% {
+    background: rgba(186, 140, 240, 0.16);
+    border-color: rgba(186, 140, 240, 0.45);
+    box-shadow: 0 0 0 0 rgba(186, 140, 240, 0);
+  }
+  30% {
+    background: rgba(186, 140, 240, 0.5);
+    border-color: rgba(186, 140, 240, 0.9);
+    box-shadow:
+      0 0 0 4px rgba(186, 140, 240, 0.28),
+      0 0 16px rgba(186, 140, 240, 0.7);
+  }
+}
+
+.row {
+  animation: rowIn 0.4s ease-out backwards;
+}
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}

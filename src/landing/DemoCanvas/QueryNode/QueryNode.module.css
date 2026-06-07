@@ -1,0 +1,246 @@
+.node {
+  display: flex;
+  flex-direction: column;
+  width: 410px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-node);
+  box-shadow: var(--pk-node-shadow);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  color: var(--pk-ink);
+  animation:
+    nodeIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    glowPop 0.9s ease-out 0.12s;
+}
+
+@keyframes nodeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* purple spawn glow (query type colour) */
+@keyframes glowPop {
+  0% {
+    box-shadow: var(--pk-node-shadow), 0 0 0 0 rgba(186, 140, 240, 0);
+  }
+  40% {
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 8px rgba(186, 140, 240, 0.3),
+      0 0 40px 4px rgba(186, 140, 240, 0.4);
+  }
+  100% {
+    box-shadow: var(--pk-node-shadow), 0 0 0 0 transparent;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  font-size: 12px;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+.head:active {
+  cursor: grabbing;
+}
+
+.typeDot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--pk-type-query);
+  box-shadow: 0 0 8px var(--pk-type-query);
+}
+
+.typeTag {
+  font: 500 12px var(--pk-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pk-ink);
+}
+
+.title {
+  margin-left: auto;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-ink-faint);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+.sqlBlock {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+.sqlBlock.streaming::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(186, 140, 240, 0.12) 50%,
+    transparent 100%
+  );
+  animation: sqlStream 1.2s linear infinite;
+}
+@keyframes sqlStream {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.gutter {
+  padding: 10px 0;
+  text-align: right;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--pk-ink-faint);
+  font: 400 11px var(--pk-font-mono);
+}
+.gutter div {
+  height: 19px;
+  line-height: 19px;
+  padding-right: 8px;
+}
+
+.code {
+  padding: 10px 14px;
+  font: 400 12px var(--pk-font-mono);
+  color: var(--pk-ink-2);
+  white-space: pre;
+  overflow-x: auto;
+}
+.codeRow {
+  height: 19px;
+  line-height: 19px;
+}
+
+.kw {
+  color: rgb(186, 140, 240);
+  font-weight: 500;
+}
+.fn {
+  color: rgb(120, 200, 150);
+}
+.num {
+  color: var(--pk-yellow);
+}
+.str {
+  color: rgb(229, 224, 136);
+}
+.plain {
+  color: var(--pk-ink-2);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.meta {
+  font: 400 10.5px var(--pk-font-mono);
+  letter-spacing: 0.06em;
+  color: var(--pk-ink-mute);
+}
+
+.run {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border: 0;
+  border-radius: 6px;
+  background: linear-gradient(
+    180deg,
+    rgba(154, 108, 224, 0.95) 0%,
+    rgba(118, 76, 184, 0.95) 100%
+  );
+  color: #fff;
+  font: 600 12px var(--pk-font-section);
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 6px 16px rgba(154, 108, 224, 0.4);
+  transition: transform 0.15s ease;
+}
+.run:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.run:not(:disabled) {
+  animation: runPulse 2s ease-in-out infinite;
+}
+.run:disabled {
+  cursor: default;
+  opacity: 0.6;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+.run svg {
+  width: 11px;
+  height: 11px;
+}
+.spinner {
+  transform-origin: center;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes runPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+      0 6px 16px rgba(154, 108, 224, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+      0 6px 20px rgba(154, 108, 224, 0.6),
+      0 0 0 4px rgba(154, 108, 224, 0.2);
+  }
+}
+
+.handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}

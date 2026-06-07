@@ -25,6 +25,21 @@
   --pk-hairline-2: rgba(255, 255, 255, 0.12);
   --pk-card: rgba(20, 21, 40, 0.55);
 
+  /* Canvas / demo nodes (the real Peek app exposes these as --pk-type-* / node chrome) */
+  --pk-type-agent: var(--pk-blue);
+  --pk-type-query: rgb(186, 140, 240);
+  --pk-type-result: rgb(120, 200, 150);
+  --pk-type-chart: var(--pk-yellow);
+  --pk-radius-node: 10px;
+  --pk-node-bg: linear-gradient(
+    180deg,
+    rgba(22, 20, 28, 0.92) 0%,
+    rgba(18, 16, 24, 0.92) 100%
+  );
+  --pk-node-border: rgba(255, 255, 255, 0.08);
+  --pk-node-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
   /* Type — *-font vars are provided by next/font in layout.tsx */
   --pk-font-mono: var(--font-jetbrains-mono), "Monaspace Krypton", ui-monospace,
     SFMono-Regular, Menlo, monospace;

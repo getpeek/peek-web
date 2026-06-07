@@ -24,7 +24,8 @@ export function Hero() {
       </div>
 
       <p className={styles.tagline}>
-        A DB GUI that helps you <em>explore your data</em>. Open source and free for ever.
+        A DB GUI that helps you <em>explore your data</em>. <br />
+        Open source and free for ever.
       </p>
 
       <div className={styles.heroCta}>
