@@ -1,0 +1,63 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  background: var(--pk-card);
+  border: 1px solid var(--pk-hairline);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  font-family: var(--pk-font-mono);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pk-ink-mute);
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    background 0.12s;
+
+  & svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: var(--pk-hairline);
+    color: var(--pk-ink);
+  }
+}
+
+.active {
+  background: var(--pk-hairline);
+  color: var(--pk-ink);
+}
+
+/* shortcut hint — hidden on mobile (no keyboard), revealed on larger screens */
+.kbd {
+  display: none;
+  padding: 1px 4px;
+  border: 1px solid var(--pk-hairline);
+  border-radius: 3px;
+  font: 500 10px var(--pk-font-mono);
+  color: var(--pk-ink-faint);
+
+  @media (min-width: 768px) {
+    display: inline-block;
+  }
+}
+
+.sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 2px;
+  background: var(--pk-hairline);
+}

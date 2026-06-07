@@ -17,6 +17,7 @@ import { ResultNode } from "./ResultNode/ResultNode";
 import { ChartNode } from "./ChartNode/ChartNode";
 import { VariableNode } from "./VariableNode/VariableNode";
 import { CollabOverlay } from "./RemoteCursor/CollabOverlay";
+import { Toolbar } from "./Toolbar/Toolbar";
 import { FloatingEdge } from "./FloatingEdge";
 import { useDemoFlow } from "./useDemoFlow";
 import { ANNA } from "./data";
@@ -153,6 +154,8 @@ function CanvasChrome({ onReset, collabJoined }: { onReset: () => void; collabJo
       <Panel position='bottom-right'>
         <div className={styles.panHint}>drag to pan · scroll to zoom</div>
       </Panel>
+
+      <Toolbar />
     </>
   );
 }

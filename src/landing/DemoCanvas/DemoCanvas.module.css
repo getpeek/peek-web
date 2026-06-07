@@ -193,8 +193,9 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* hidden on mobile so the bottom-center toolbar has room; shown ≥768px */
 .panHint {
-  display: inline-flex;
+  display: none;
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
@@ -207,4 +208,8 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--pk-ink-faint);
+
+  @media (min-width: 768px) {
+    display: inline-flex;
+  }
 }
