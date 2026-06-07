@@ -7,7 +7,7 @@ export const AGENT_PROMPT =
 export const AGENT_MODEL = "Qwen/Qwen3.6-35B-A3B";
 
 export const AGENT_REPLY =
-  "Here's a query that counts the job ads each user is the recruiter for and keeps the top 10. Run it to see the results.";
+  "Here's a query that ranks users by the job ads they recruit for, with the row cap pulled out into a `limit` variable. Run it to see the results.";
 
 export const AGENT_EMPTY_TITLE = "Ask anything about your data";
 export const AGENT_EMPTY_SUBTITLE = "connected to analytics_db";
@@ -20,13 +20,17 @@ export const SQL_LINES = [
   "JOIN job_ads j ON j.recruiter_id = u.id",
   "GROUP BY u.id, u.email",
   "ORDER BY job_ads DESC",
-  "LIMIT 10;",
+  "LIMIT @limit;",
 ];
 
 export const SQL_TEXT = SQL_LINES.join("\n");
 
 export const QUERY_TITLE = "top_recruiters.sql";
 export const QUERY_META = `${SQL_LINES.length} lines · postgres`;
+
+// the limit variable the agent extracts and feeds into the query (LIMIT @limit)
+export const VARIABLE_NAME = "limit";
+export const VARIABLE_VALUE = "10";
 
 // ---- result tables (schema-driven so one node renders any table) ----
 export type ColumnKind = "pk" | "fk" | "num" | "text";

@@ -1,7 +1,7 @@
 // Minimal SQL tokenizer for the demo query node. The SQL is our own trusted
 // constant, so this only needs to cover the handful of token kinds we render.
 
-export type SqlTokenKind = "kw" | "fn" | "num" | "str" | "plain";
+export type SqlTokenKind = "kw" | "fn" | "num" | "str" | "var" | "plain";
 
 export type SqlToken = {
   value: string;
@@ -10,7 +10,7 @@ export type SqlToken = {
 
 // Longer multi-word keywords come first so the alternation matches them greedily.
 const PATTERN =
-  /(\b(?:GROUP BY|ORDER BY|LEFT JOIN|INNER JOIN|SELECT|FROM|WHERE|LIMIT|JOIN|ON|AND|OR|AS|DESC|ASC)\b)|(\b(?:COUNT|SUM|AVG|MAX|MIN)\b)|('[^']*')|(\b\d+\b)/g;
+  /(\b(?:GROUP BY|ORDER BY|LEFT JOIN|INNER JOIN|SELECT|FROM|WHERE|LIMIT|JOIN|ON|AND|OR|AS|DESC|ASC)\b)|(\b(?:COUNT|SUM|AVG|MAX|MIN)\b)|('[^']*')|(\b\d+\b)|(@\w+)/g;
 
 export function tokenizeSqlLine(line: string): SqlToken[] {
   const tokens: SqlToken[] = [];
@@ -21,14 +21,18 @@ export function tokenizeSqlLine(line: string): SqlToken[] {
     if (index > last) {
       tokens.push({ value: line.slice(last, index), kind: "plain" });
     }
-    const [full, keyword, fn, str] = match;
+    const [full, keyword, fn, str, num, variable] = match;
     const kind: SqlTokenKind = keyword
       ? "kw"
       : fn
         ? "fn"
         : str
           ? "str"
-          : "num";
+          : num
+            ? "num"
+            : variable
+              ? "var"
+              : "plain";
     tokens.push({ value: full, kind });
     last = index + full.length;
   }

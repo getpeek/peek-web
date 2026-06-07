@@ -51,9 +51,9 @@ export function Hero() {
         <span className={styles.dot}>·</span>
         <span>SQLite</span>
         <span className={styles.dot}>·</span>
-        <span>ClickHouse</span>
-        <span className={styles.dot}>·</span>
         <span>DuckDB</span>
+        <span className={styles.dot}>·</span>
+        <span>&amp; more coming</span>
       </div>
     </section>
   );

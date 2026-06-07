@@ -111,28 +111,56 @@
   color: var(--pk-ink-mute);
 }
 .chartBtn {
+  position: relative;
+  overflow: hidden;
   margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 9px;
-  border: 1px solid var(--pk-node-border);
+  padding: 4px 11px;
+  border: 1px solid rgba(218, 230, 81, 0.55);
   border-radius: 5px;
-  background: transparent;
-  color: var(--pk-ink-2);
-  font: 500 10px var(--pk-font-mono);
-  letter-spacing: 0.08em;
+  background: rgba(218, 230, 81, 0.14);
+  color: var(--pk-yellow);
+  font: 600 10px var(--pk-font-mono);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   transition:
-    color 0.12s ease,
     border-color 0.12s ease,
-    background 0.12s ease;
+    background 0.12s ease,
+    box-shadow 0.12s ease,
+    transform 0.12s ease;
 }
 .chartBtn:hover {
-  color: var(--pk-yellow);
-  border-color: rgba(218, 230, 81, 0.4);
-  background: rgba(218, 230, 81, 0.08);
+  background: rgba(218, 230, 81, 0.26);
+  border-color: rgba(218, 230, 81, 0.9);
+  box-shadow: 0 0 14px rgba(218, 230, 81, 0.45);
+  transform: translateY(-1px);
+}
+/* periodic light sweep to read as a call-to-action */
+.chartBtn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 65%
+  );
+  transform: translateX(-130%);
+  animation: chartShine 2.6s ease-in-out infinite;
+}
+@keyframes chartShine {
+  0% {
+    transform: translateX(-130%);
+  }
+  55%,
+  100% {
+    transform: translateX(130%);
+  }
 }
 .chartBtn svg {
   width: 11px;

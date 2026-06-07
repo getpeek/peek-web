@@ -15,6 +15,7 @@ import { AgentNode } from "./AgentNode/AgentNode";
 import { QueryNode } from "./QueryNode/QueryNode";
 import { ResultNode } from "./ResultNode/ResultNode";
 import { ChartNode } from "./ChartNode/ChartNode";
+import { VariableNode } from "./VariableNode/VariableNode";
 import { FloatingEdge } from "./FloatingEdge";
 import { useDemoFlow } from "./useDemoFlow";
 import styles from "./DemoCanvas.module.css";
@@ -24,6 +25,7 @@ const nodeTypes = {
   query: QueryNode,
   result: ResultNode,
   chart: ChartNode,
+  variable: VariableNode,
 };
 const edgeTypes = { floating: FloatingEdge };
 

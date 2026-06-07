@@ -12,6 +12,7 @@ import type { AgentFlowNode, AgentNodeData } from "./AgentNode/AgentNode";
 import type { QueryFlowNode, QueryNodeData } from "./QueryNode/QueryNode";
 import type { ResultFlowNode, ResultNodeData } from "./ResultNode/ResultNode";
 import type { ChartFlowNode } from "./ChartNode/ChartNode";
+import type { VariableFlowNode } from "./VariableNode/VariableNode";
 import {
   AGENT_PROMPT,
   AGENT_REPLY,
@@ -22,11 +23,18 @@ import {
   RESULT_TITLE,
   SQL_TEXT,
   USER_SETTINGS_COLUMNS,
+  VARIABLE_NAME,
+  VARIABLE_VALUE,
   jobAdsRows,
   userSettingsRows,
 } from "./data";
 
-type DemoNode = AgentFlowNode | QueryFlowNode | ResultFlowNode | ChartFlowNode;
+type DemoNode =
+  | AgentFlowNode
+  | QueryFlowNode
+  | ResultFlowNode
+  | ChartFlowNode
+  | VariableFlowNode;
 type DemoPhase =
   | "idle"
   | "thinking"
@@ -43,11 +51,13 @@ const RESULT_ID = "result";
 const SETTINGS_ID = "ref-user_settings";
 const ADS_ID = "ref-job_ads";
 const CHART_ID = "chart";
+const VARIABLE_ID = "variable";
 
 const QUERY_COLOR = "rgb(186, 140, 240)";
 const RESULT_COLOR = "rgb(120, 200, 150)";
 const REFERENCE_COLOR = "rgb(81, 128, 230)";
 const CHART_COLOR = "rgb(218, 230, 81)";
+const VARIABLE_COLOR = "rgb(180, 129, 147)";
 
 const AGENT_POSITION = { x: 56, y: 110 };
 const QUERY_POSITION = { x: 540, y: 96 };
@@ -55,6 +65,7 @@ const RESULT_POSITION = { x: 1020, y: 70 };
 const USER_SETTINGS_POSITION = { x: 820, y: 560 };
 const JOB_ADS_POSITION = { x: 1300, y: 560 };
 const CHART_POSITION = { x: 1500, y: 90 };
+const VARIABLE_POSITION = { x: 600, y: -150 };
 
 function createAgentNode(onSend: () => void): AgentFlowNode {
   return {
@@ -214,16 +225,25 @@ export function useDemoFlow() {
         position: QUERY_POSITION,
         data: { sql: "", status: "streaming", onRun },
       };
-      setNodes((current) => [...current, queryNode]);
-      setEdges([{ ...floatingEdge("agent-query", AGENT_ID, QUERY_ID, QUERY_COLOR), animated: true }]);
+      const variableNode: VariableFlowNode = {
+        id: VARIABLE_ID,
+        type: "variable",
+        position: VARIABLE_POSITION,
+        data: { name: VARIABLE_NAME, value: VARIABLE_VALUE },
+      };
+      setNodes((current) => [...current, queryNode, variableNode]);
+      setEdges([
+        { ...floatingEdge("agent-query", AGENT_ID, QUERY_ID, QUERY_COLOR), animated: true },
+        floatingEdge("variable-query", VARIABLE_ID, QUERY_ID, VARIABLE_COLOR),
+      ]);
       phase.current = "queryStreaming";
 
-      // let the new node mount + measure, then glide the camera to it
+      // let the new nodes mount + measure, then frame the query + its variable
       schedule(140, () =>
         fitView({
-          nodes: [{ id: QUERY_ID }],
+          nodes: [{ id: QUERY_ID }, { id: VARIABLE_ID }],
           duration: 800,
-          padding: 0.4,
+          padding: 0.32,
           maxZoom: 1,
         }),
       );

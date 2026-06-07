@@ -1,0 +1,123 @@
+.node {
+  display: flex;
+  flex-direction: column;
+  width: 230px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-node);
+  box-shadow: var(--pk-node-shadow);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  color: var(--pk-ink);
+  animation:
+    nodeIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    glowPop 0.9s ease-out 0.12s;
+}
+
+@keyframes nodeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* mauve spawn glow (variable type colour) */
+@keyframes glowPop {
+  0% {
+    box-shadow: var(--pk-node-shadow), 0 0 0 0 rgba(180, 129, 147, 0);
+  }
+  40% {
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 8px rgba(180, 129, 147, 0.3),
+      0 0 40px 4px rgba(180, 129, 147, 0.4);
+  }
+  100% {
+    box-shadow: var(--pk-node-shadow), 0 0 0 0 transparent;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  font-size: 12px;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+.head:active {
+  cursor: grabbing;
+}
+
+.typeDot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--pk-type-variable);
+  box-shadow: 0 0 8px var(--pk-type-variable);
+}
+
+.typeTag {
+  font: 500 12px var(--pk-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pk-ink);
+}
+
+/* key/value table (mirrors the real Peek variable node) */
+.body {
+  overflow: hidden;
+}
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font: 400 12px var(--pk-font-mono);
+}
+.table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  vertical-align: middle;
+}
+.table tr:last-child td {
+  border-bottom: none;
+}
+.nameCell {
+  width: 44%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid var(--pk-node-border);
+}
+.sigil {
+  margin-right: 2px;
+  color: rgb(214, 170, 185);
+}
+.name {
+  color: var(--pk-ink);
+}
+.valueCell {
+  color: var(--pk-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}

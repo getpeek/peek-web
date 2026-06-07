@@ -30,6 +30,7 @@
   --pk-type-query: rgb(186, 140, 240);
   --pk-type-result: rgb(120, 200, 150);
   --pk-type-chart: var(--pk-yellow);
+  --pk-type-variable: var(--pk-mauve);
   --pk-radius-node: 10px;
   --pk-node-bg: linear-gradient(
     180deg,
