@@ -46,11 +46,13 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
 
     const gl = canvas.getContext("webgl2", {
       alpha: true,
-      // straight (non-premultiplied) alpha: the browser multiplies rgb by alpha
-      // when compositing over the page, which is consistent across GPUs. The
-      // premultiplied "alpha 0, additive rgb" trick renders only in SwiftShader
-      // and goes fully transparent on real GPU compositors.
-      premultipliedAlpha: false,
+      // Premultiplied alpha: the shader outputs rgb already multiplied by the
+      // mask. Straight alpha (premultipliedAlpha:false) renders correctly in
+      // Chrome but blooms in Safari, which composites the canvas as if it were
+      // premultiplied and so shows low-coverage pixels at full colour. Doing the
+      // multiply in-shader is the portable path — same maths, no reliance on the
+      // browser's straight→premultiplied conversion.
+      premultipliedAlpha: true,
       antialias: true,
     });
     if (!gl) return; // no WebGL2 → the CSS ambient fallback stays visible

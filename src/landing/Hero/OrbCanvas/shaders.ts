@@ -76,8 +76,11 @@ void main() {
   vec2 dir = vec2(-0.7986, 0.6018);
   float g = clamp(0.5 + dot(st - u_center, dir) / (2.0 * u_radius), 0.0, 1.0);
 
-  // Straight alpha (premultipliedAlpha:false); the opaque interior partially
-  // occludes the wordmark rendered behind this canvas.
-  fragColor = vec4(gradient(g), mask);
+  // Premultiplied alpha (premultipliedAlpha:true): rgb is multiplied by the
+  // mask here rather than left to the page compositor. Straight alpha bloomed
+  // in Safari, which composites the canvas as if it were already premultiplied
+  // and so renders low-coverage pixels at full colour. The opaque interior
+  // partially occludes the wordmark rendered behind this canvas.
+  fragColor = vec4(gradient(g) * mask, mask);
 }
 `;
