@@ -256,39 +256,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
-  border: none;
-  border-radius: 8px;
-  background: var(--pk-type-agent);
-  color: #14111b;
+  border: 1px solid var(--pk-node-border);
+  border-radius: 6px;
+  background: var(--pk-node-bg-2);
+  color: var(--pk-ink);
   cursor: pointer;
-  transition: filter 0.12s ease;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
 }
 .send:hover:not(:disabled) {
-  filter: brightness(1.08);
-}
-.send:not(:disabled) {
-  animation: sendPulse 2s ease-in-out infinite;
+  background: var(--pk-hairline-2);
 }
 .send:disabled {
-  background: var(--pk-hairline-2);
-  color: var(--pk-ink-faint);
-  cursor: default;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .send svg {
-  width: 15px;
-  height: 15px;
-}
-@keyframes sendPulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(81, 128, 230, 0);
-  }
-  50% {
-    box-shadow: 0 0 0 5px rgba(81, 128, 230, 0.18);
-  }
+  width: 13px;
+  height: 13px;
 }
 
 /* xyflow connection points — invisible, anchor the edge */

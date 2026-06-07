@@ -31,6 +31,8 @@
   --pk-type-result: rgb(120, 200, 150);
   --pk-type-chart: var(--pk-yellow);
   --pk-type-variable: var(--pk-mauve);
+  /* remote collaborator accent (demo multiplayer cursor + avatar) */
+  --pk-collab-anna: rgb(240, 170, 90);
   --pk-radius-node: 10px;
   --pk-node-bg: linear-gradient(180deg, rgba(22, 20, 28, 0.92) 0%, rgba(18, 16, 24, 0.92) 100%);
   --pk-node-border: rgba(255, 255, 255, 0.08);

@@ -9,8 +9,11 @@ export type SqlToken = {
 };
 
 // Longer multi-word keywords come first so the alternation matches them greedily.
+// Case-insensitive so lowercase queries (e.g. the multiplayer demo's
+// `select * from multiplayer`) highlight too; the matched text is rendered
+// as-is, so the author's casing is preserved.
 const PATTERN =
-  /(\b(?:GROUP BY|ORDER BY|LEFT JOIN|INNER JOIN|SELECT|FROM|WHERE|LIMIT|JOIN|ON|AND|OR|AS|DESC|ASC)\b)|(\b(?:COUNT|SUM|AVG|MAX|MIN)\b)|('[^']*')|(\b\d+\b)|(@\w+)/gu;
+  /(\b(?:GROUP BY|ORDER BY|LEFT JOIN|INNER JOIN|SELECT|FROM|WHERE|LIMIT|JOIN|ON|AND|OR|AS|DESC|ASC)\b)|(\b(?:COUNT|SUM|AVG|MAX|MIN)\b)|('[^']*')|(\b\d+\b)|(@\w+)/giu;
 
 export function tokenizeSqlLine(line: string): SqlToken[] {
   const tokens: SqlToken[] = [];

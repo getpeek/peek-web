@@ -51,6 +51,13 @@
 }
 
 /* ---- canvas chrome ---- */
+/* avatar sits before (left of) the connection pill, outside it, with a gap */
+.tabCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .canvasTab {
   display: inline-flex;
   align-items: center;
@@ -77,6 +84,45 @@
 }
 .sub {
   color: var(--pk-ink-mute);
+}
+
+/* joined collaborator's initials — pops in when Anna joins the session */
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  /* background set inline (Anna's accent token) */
+  color: #1a1206;
+  font: 700 10px var(--pk-font-mono);
+  text-transform: uppercase;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.25),
+    0 2px 8px rgba(240, 170, 90, 0.4);
+  transform-origin: center;
+  animation: avatarPop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* grow from center with a bounce */
+@keyframes avatarPop {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  80% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .avatar {
+    animation: none;
+  }
 }
 
 .resetBtn {

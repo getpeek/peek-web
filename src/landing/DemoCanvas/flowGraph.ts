@@ -7,7 +7,15 @@ import type { ChartFlowNode } from "./ChartNode/ChartNode";
 import type { VariableFlowNode } from "./VariableNode/VariableNode";
 import {
   AGENT_PROMPT,
+  COLLAB_RESULT_COLUMNS,
+  COLLAB_RESULT_META,
+  COLLAB_RESULT_ROWS,
+  COLLAB_RESULT_TITLE,
   JOB_ADS_COLUMNS,
+  MULTIPLAYER_QUERY_META,
+  MULTIPLAYER_QUERY_TITLE,
+  QUERY_META,
+  QUERY_TITLE,
   RESULT_COLUMNS,
   RESULT_META,
   RESULT_ROWS,
@@ -34,7 +42,13 @@ export type DemoPhase =
   | "running"
   | "resultStreaming"
   | "resultReady"
-  | "referenced";
+  | "referenced"
+  | "charted"
+  | "collabJoining"
+  | "collabQuery"
+  | "collabRunning"
+  | "collabResult"
+  | "collabDone";
 
 export const AGENT_ID = "agent";
 export const QUERY_ID = "query";
@@ -43,6 +57,8 @@ export const SETTINGS_ID = "ref-user_settings";
 export const ADS_ID = "ref-job_ads";
 export const CHART_ID = "chart";
 export const VARIABLE_ID = "variable";
+export const COLLAB_QUERY_ID = "collab-query";
+export const COLLAB_RESULT_ID = "collab-result";
 
 export const QUERY_COLOR = "rgb(186, 140, 240)";
 export const RESULT_COLOR = "rgb(120, 200, 150)";
@@ -57,6 +73,12 @@ const USER_SETTINGS_POSITION = { x: 820, y: 560 };
 const JOB_ADS_POSITION = { x: 1300, y: 560 };
 const CHART_POSITION = { x: 1500, y: 90 };
 const VARIABLE_POSITION = { x: 600, y: -150 };
+// top-left of the query Anna drags out (the create-drag origin; the cursor
+// glides here, the node spawns here and grows from this corner)
+export const COLLAB_QUERY_POSITION = { x: 1180, y: 620 };
+const COLLAB_RESULT_POSITION = { x: 1720, y: 600 };
+// off the right edge: Anna's cursor flies in from here
+export const CURSOR_START = { x: 2320, y: 760 };
 
 export function floatingEdge(id: string, source: string, target: string, color: string): Edge {
   return {
@@ -86,7 +108,24 @@ export function createQueryNode(onRun: () => void): QueryFlowNode {
     id: QUERY_ID,
     type: "query",
     position: QUERY_POSITION,
-    data: { sql: "", status: "streaming", onRun },
+    data: { title: QUERY_TITLE, meta: QUERY_META, sql: "", status: "streaming", onRun },
+  };
+}
+
+export function createCollabQueryNode(onRun: () => void): QueryFlowNode {
+  return {
+    id: COLLAB_QUERY_ID,
+    type: "query",
+    position: COLLAB_QUERY_POSITION,
+    data: {
+      title: MULTIPLAYER_QUERY_TITLE,
+      meta: MULTIPLAYER_QUERY_META,
+      sql: "",
+      status: "streaming",
+      onRun,
+      // spawns tiny; the create-drag grows it to 1
+      createScale: 0.18,
+    },
   };
 }
 
@@ -165,3 +204,22 @@ export function createChartNode(
     data: { title, valueColumn, values },
   };
 }
+
+// Anna's query result — lists who's in the session. No follow-reference / chart
+// affordances (it's the demo's closing beat, not another branch point).
+export function createCollabResultNode(): ResultFlowNode {
+  return {
+    id: COLLAB_RESULT_ID,
+    type: "result",
+    position: COLLAB_RESULT_POSITION,
+    data: {
+      title: COLLAB_RESULT_TITLE,
+      meta: COLLAB_RESULT_META,
+      total: COLLAB_RESULT_ROWS.length,
+      columns: COLLAB_RESULT_COLUMNS,
+      rows: [],
+      width: 340,
+    },
+  };
+}
+

@@ -16,8 +16,10 @@ import { QueryNode } from "./QueryNode/QueryNode";
 import { ResultNode } from "./ResultNode/ResultNode";
 import { ChartNode } from "./ChartNode/ChartNode";
 import { VariableNode } from "./VariableNode/VariableNode";
+import { CollabOverlay } from "./RemoteCursor/CollabOverlay";
 import { FloatingEdge } from "./FloatingEdge";
 import { useDemoFlow } from "./useDemoFlow";
+import { ANNA } from "./data";
 import styles from "./DemoCanvas.module.css";
 
 const nodeTypes = {
@@ -44,7 +46,7 @@ export function DemoCanvas() {
 }
 
 function Flow() {
-  const { nodes, edges, onNodesChange, onEdgesChange, reset } = useDemoFlow();
+  const { nodes, edges, onNodesChange, onEdgesChange, reset, collabJoined, cursor } = useDemoFlow();
 
   return (
     <ReactFlow
@@ -73,12 +75,13 @@ function Flow() {
         color='rgba(255, 255, 255, 0.07)'
         bgColor='transparent'
       />
-      <CanvasChrome onReset={reset} />
+      <CollabOverlay cursor={cursor} />
+      <CanvasChrome onReset={reset} collabJoined={collabJoined} />
     </ReactFlow>
   );
 }
 
-function CanvasChrome({ onReset }: { onReset: () => void }) {
+function CanvasChrome({ onReset, collabJoined }: { onReset: () => void; collabJoined: boolean }) {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const { zoom } = useViewport();
 
@@ -87,10 +90,22 @@ function CanvasChrome({ onReset }: { onReset: () => void }) {
   return (
     <>
       <Panel position='top-right'>
-        <div className={styles.canvasTab}>
-          <span className={styles.liveDot} />
-          <span className={styles.conn}>analytics_db</span>
-          <span className={styles.sub}>· postgres</span>
+        <div className={styles.tabCluster}>
+          {collabJoined ? (
+            <span
+              className={styles.avatar}
+              style={{ background: "var(--pk-collab-anna)" }}
+              aria-label={`${ANNA.name} (guest)`}
+              title={`${ANNA.name} · guest`}
+            >
+              {ANNA.initials}
+            </span>
+          ) : null}
+          <div className={styles.canvasTab}>
+            <span className={styles.liveDot} />
+            <span className={styles.conn}>analytics_db</span>
+            <span className={styles.sub}>· postgres</span>
+          </div>
         </div>
       </Panel>
 

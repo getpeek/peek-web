@@ -93,3 +93,26 @@ export function jobAdsRows(userId: string): ResultRow[] {
     { id: "ad_4830", recruiter_id: userId, title: "DevOps Lead", status: "paused" },
   ];
 }
+
+// ---- multiplayer finale ----
+// A remote collaborator ("Anna") joins, writes her own query and runs it; the
+// result lists everyone in the session. Drives the collab chapter of the demo.
+export const ANNA = { name: "Anna", initials: "A" } as const;
+
+export const MULTIPLAYER_SQL = "select * from multiplayer";
+export const MULTIPLAYER_QUERY_TITLE = "multiplayer.sql";
+export const MULTIPLAYER_QUERY_META = "1 line · postgres";
+
+export const COLLAB_RESULT_TITLE = "multiplayer";
+export const COLLAB_RESULT_META = "1 ms";
+
+export const COLLAB_RESULT_COLUMNS: ResultColumn[] = [
+  { key: "id", label: "id", kind: "pk" },
+  { key: "name", label: "name", kind: "text" },
+  { key: "role", label: "role", kind: "text" },
+];
+
+export const COLLAB_RESULT_ROWS: ResultRow[] = [
+  { id: 1, name: "You", role: "Host" },
+  { id: 2, name: "Anna", role: "Guest" },
+];

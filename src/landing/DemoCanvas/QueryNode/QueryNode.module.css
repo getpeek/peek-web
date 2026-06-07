@@ -14,6 +14,12 @@
     glowPop 0.9s ease-out 0.12s;
 }
 
+/* while being "dragged out" the inline scale owns the transform, so the spawn
+   animation must not fight it */
+.node.creating {
+  animation: none;
+}
+
 @keyframes nodeIn {
   from {
     opacity: 0;
@@ -191,29 +197,24 @@
 .run {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 13px;
-  border: 0;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--pk-node-border);
   border-radius: 6px;
-  background: linear-gradient(180deg, rgba(154, 108, 224, 0.95) 0%, rgba(118, 76, 184, 0.95) 100%);
-  color: #fff;
-  font: 600 12px var(--pk-font-section);
+  background: var(--pk-node-bg-2);
+  color: var(--pk-ink);
+  font: 500 12px var(--pk-font-mono);
   cursor: pointer;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-    0 6px 16px rgba(154, 108, 224, 0.4);
-  transition: transform 0.15s ease;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
 }
 .run:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-.run:not(:disabled) {
-  animation: runPulse 2s ease-in-out infinite;
+  background: var(--pk-hairline-2);
 }
 .run:disabled {
-  cursor: default;
-  opacity: 0.6;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .run svg {
   width: 11px;
@@ -226,20 +227,6 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-@keyframes runPulse {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-      0 6px 16px rgba(154, 108, 224, 0.4);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-      0 6px 20px rgba(154, 108, 224, 0.6),
-      0 0 0 4px rgba(154, 108, 224, 0.2);
   }
 }
 

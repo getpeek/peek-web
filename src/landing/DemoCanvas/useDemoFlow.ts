@@ -1,16 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useEdgesState, useNodesState, useReactFlow, type Edge } from "@xyflow/react";
 
 import type { AgentNodeData } from "./AgentNode/AgentNode";
 import type { QueryNodeData } from "./QueryNode/QueryNode";
 import type { ResultNodeData } from "./ResultNode/ResultNode";
+import type { CursorState } from "./RemoteCursor/CollabOverlay";
 import {
   ADS_ID,
   AGENT_ID,
   CHART_COLOR,
   CHART_ID,
+  COLLAB_QUERY_ID,
+  COLLAB_QUERY_POSITION,
+  COLLAB_RESULT_ID,
+  CURSOR_START,
   QUERY_COLOR,
   QUERY_ID,
   REFERENCE_COLOR,
@@ -22,6 +27,8 @@ import {
   createAdsNode,
   createAgentNode,
   createChartNode,
+  createCollabQueryNode,
+  createCollabResultNode,
   createQueryNode,
   createResultNode,
   createSettingsNode,
@@ -30,10 +37,27 @@ import {
   type DemoNode,
   type DemoPhase,
 } from "./flowGraph";
-import { AGENT_PROMPT, AGENT_REPLY, RESULT_COLUMNS, RESULT_ROWS, SQL_TEXT } from "./data";
+import {
+  AGENT_PROMPT,
+  AGENT_REPLY,
+  COLLAB_RESULT_ROWS,
+  MULTIPLAYER_SQL,
+  RESULT_COLUMNS,
+  RESULT_ROWS,
+  SQL_TEXT,
+  type ResultRow,
+} from "./data";
+
+type Point = { x: number; y: number };
+
+// the collab finale's choreography points (flow coords)
+const CREATE_SCALE_START = 0.18;
+const DRAG_SIZE = { w: 410, h: 150 }; // ~query-node size the cursor drags out
+const RUN_POINT: Point = { x: 1530, y: 730 };
+const RESULT_PARK_POINT: Point = { x: 2000, y: 710 };
 
 export function useDemoFlow() {
-  const { fitView } = useReactFlow();
+  const { fitView, setCenter } = useReactFlow();
   const phase = useRef<DemoPhase>("idle");
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -44,13 +68,21 @@ export function useDemoFlow() {
   const runRef = useRef<() => void>(() => {});
   const referenceRef = useRef<(userId: string) => void>(() => {});
   const chartRef = useRef<() => void>(() => {});
+  const collabRunRef = useRef<() => void>(() => {});
   const onSend = useCallback(() => sendRef.current(), []);
   const onRun = useCallback(() => runRef.current(), []);
   const onReference = useCallback((userId: string) => referenceRef.current(userId), []);
   const onChart = useCallback(() => chartRef.current(), []);
+  const onCollabRun = useCallback(() => collabRunRef.current(), []);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<DemoNode>([createAgentNode(onSend)]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  // surfaced to the title bar so Anna's avatar pops in when she joins
+  const [collabJoined, setCollabJoined] = useState(false);
+  // Anna's cursor — a screen-space overlay positioned from these flow coords
+  const [cursor, setCursor] = useState<CursorState | null>(null);
+  // tween source of truth, kept off React state so each tick reads the latest
+  const cursorPos = useRef<Point>(CURSOR_START);
 
   const schedule = useCallback((ms: number, fn: () => void) => {
     timers.current.push(setTimeout(fn, ms));
@@ -71,11 +103,13 @@ export function useDemoFlow() {
     [setNodes],
   );
 
-  const patchQuery = useCallback(
-    (patch: Partial<QueryNodeData>) =>
+  const patchQueryById = useCallback(
+    (id: string, patch: Partial<QueryNodeData>) =>
       setNodes(current =>
         current.map(node =>
-          node.type === "query" ? { ...node, data: { ...node.data, ...patch } } : node,
+          node.id === id && node.type === "query"
+            ? { ...node, data: { ...node.data, ...patch } }
+            : node,
         ),
       ),
     [setNodes],
@@ -101,36 +135,89 @@ export function useDemoFlow() {
     [setEdges],
   );
 
+  const pressCursor = useCallback(
+    (pressed: boolean) => setCursor(current => (current ? { ...current, pressed } : current)),
+    [],
+  );
+
+  // Eased JS tween of the cursor's flow position; the overlay's short CSS
+  // transition smooths between steps. `onStep` receives eased progress (0..1)
+  // so callers can drive synced effects (e.g. the node growing under the drag).
+  const glideCursor = useCallback(
+    (to: Point, duration: number, opts?: { onStep?: (progress: number) => void; onDone?: () => void }) => {
+      const from = { ...cursorPos.current };
+      const steps = Math.max(1, Math.round(duration / 24));
+      let step = 0;
+      const tick = () => {
+        step += 1;
+        const raw = step / steps;
+        const eased = raw < 0.5 ? 2 * raw * raw : 1 - (-2 * raw + 2) ** 2 / 2;
+        const position = {
+          x: from.x + (to.x - from.x) * eased,
+          y: from.y + (to.y - from.y) * eased,
+        };
+        cursorPos.current = position;
+        setCursor(current => (current ? { ...current, x: position.x, y: position.y } : current));
+        opts?.onStep?.(eased);
+        if (step < steps) {
+          schedule(24, tick);
+          return;
+        }
+        opts?.onDone?.();
+      };
+      tick();
+    },
+    [schedule],
+  );
+
+  const streamSqlInto = useCallback(
+    (id: string, fullText: string, onDone: () => void) => {
+      let cursorIndex = 0;
+      const tick = () => {
+        cursorIndex = Math.min(fullText.length, cursorIndex + 4);
+        patchQueryById(id, { sql: fullText.slice(0, cursorIndex) });
+        if (cursorIndex < fullText.length) {
+          schedule(28, tick);
+          return;
+        }
+        onDone();
+      };
+      tick();
+    },
+    [patchQueryById, schedule],
+  );
+
+  const streamRowsInto = useCallback(
+    (id: string, rows: ResultRow[], onDone: () => void) => {
+      let count = 0;
+      const tick = () => {
+        count += 1;
+        patchResultNode(id, { rows: rows.slice(0, count) });
+        if (count < rows.length) {
+          schedule(55, tick);
+          return;
+        }
+        onDone();
+      };
+      tick();
+    },
+    [patchResultNode, schedule],
+  );
+
   const streamSql = useCallback(() => {
-    let cursor = 0;
-    const tick = () => {
-      cursor = Math.min(SQL_TEXT.length, cursor + 4);
-      patchQuery({ sql: SQL_TEXT.slice(0, cursor) });
-      if (cursor < SQL_TEXT.length) {
-        schedule(28, tick);
-        return;
-      }
-      patchQuery({ status: "ready" });
+    streamSqlInto(QUERY_ID, SQL_TEXT, () => {
+      patchQueryById(QUERY_ID, { status: "ready" });
       deanimateEdge("agent-query");
       phase.current = "queryReady";
-    };
-    tick();
-  }, [patchQuery, schedule, deanimateEdge]);
+    });
+  }, [streamSqlInto, patchQueryById, deanimateEdge]);
 
   const streamRows = useCallback(() => {
-    let count = 0;
-    const tick = () => {
-      count += 1;
-      patchResultNode(RESULT_ID, { rows: RESULT_ROWS.slice(0, count) });
-      if (count < RESULT_ROWS.length) {
-        schedule(55, tick);
-        return;
-      }
+    streamRowsInto(RESULT_ID, RESULT_ROWS, () => {
       deanimateEdge("query-result");
       phase.current = "resultReady";
-    };
-    tick();
-  }, [patchResultNode, schedule, deanimateEdge]);
+    });
+  }, [streamRowsInto, deanimateEdge]);
 
   const send = useCallback(() => {
     if (phase.current !== "idle") {
@@ -182,11 +269,11 @@ export function useDemoFlow() {
       return;
     }
     phase.current = "running";
-    patchQuery({ status: "running" });
+    patchQueryById(QUERY_ID, { status: "running" });
 
     // simulate execution latency, then materialise the result
     schedule(700, () => {
-      patchQuery({ status: "done" });
+      patchQueryById(QUERY_ID, { status: "done" });
 
       setNodes(current => [...current, createResultNode(onReference, onChart)]);
       setEdges(current => [
@@ -205,7 +292,7 @@ export function useDemoFlow() {
       );
       schedule(360, streamRows);
     });
-  }, [patchQuery, schedule, setNodes, setEdges, fitView, streamRows, onReference, onChart]);
+  }, [patchQueryById, schedule, setNodes, setEdges, fitView, streamRows, onReference, onChart]);
 
   runRef.current = run;
 
@@ -243,7 +330,107 @@ export function useDemoFlow() {
 
   referenceRef.current = reference;
 
-  // Visualize the result's numeric column as a bar chart node.
+  // ---- multiplayer finale: Anna joins, drags out a query and runs it ----
+
+  const collabShowResult = useCallback(() => {
+    patchQueryById(COLLAB_QUERY_ID, { status: "done" });
+
+    setNodes(current => [...current, createCollabResultNode()]);
+    setEdges(current => [
+      ...current,
+      {
+        ...floatingEdge("collab-query-result", COLLAB_QUERY_ID, COLLAB_RESULT_ID, RESULT_COLOR),
+        animated: true,
+      },
+    ]);
+    phase.current = "collabResult";
+
+    schedule(140, () =>
+      fitView({
+        nodes: [{ id: COLLAB_QUERY_ID }, { id: COLLAB_RESULT_ID }],
+        duration: 800,
+        padding: 0.3,
+        maxZoom: 1,
+      }),
+    );
+    // Anna's cursor settles beside her result and stays — she's still here
+    schedule(320, () => glideCursor(RESULT_PARK_POINT, 700));
+    schedule(380, () =>
+      streamRowsInto(COLLAB_RESULT_ID, COLLAB_RESULT_ROWS, () => {
+        deanimateEdge("collab-query-result");
+        phase.current = "collabDone";
+      }),
+    );
+  }, [patchQueryById, setNodes, setEdges, schedule, fitView, glideCursor, streamRowsInto, deanimateEdge]);
+
+  const collabRun = useCallback(() => {
+    if (phase.current !== "collabQuery") {
+      return;
+    }
+    phase.current = "collabRunning";
+    pressCursor(true);
+    schedule(300, () => pressCursor(false));
+    patchQueryById(COLLAB_QUERY_ID, { status: "running" });
+    schedule(700, collabShowResult);
+  }, [pressCursor, schedule, patchQueryById, collabShowResult]);
+
+  collabRunRef.current = collabRun;
+
+  // Anna presses on empty canvas and drags the query node out; it grows from its
+  // top-left under the cursor (like the product's place-tool), then streams SQL.
+  const collabCreateQuery = useCallback(() => {
+    pressCursor(true);
+    setNodes(current => [...current, createCollabQueryNode(onCollabRun)]);
+    phase.current = "collabQuery";
+
+    const target = {
+      x: cursorPos.current.x + DRAG_SIZE.w,
+      y: cursorPos.current.y + DRAG_SIZE.h,
+    };
+    glideCursor(target, 750, {
+      onStep: progress =>
+        patchQueryById(COLLAB_QUERY_ID, {
+          createScale: CREATE_SCALE_START + (1 - CREATE_SCALE_START) * progress,
+        }),
+      onDone: () => {
+        pressCursor(false);
+        patchQueryById(COLLAB_QUERY_ID, { createScale: 1 });
+        schedule(120, () =>
+          fitView({
+            nodes: [{ id: COLLAB_QUERY_ID }],
+            duration: 700,
+            padding: 0.5,
+            maxZoom: 1,
+          }),
+        );
+        schedule(280, () =>
+          streamSqlInto(COLLAB_QUERY_ID, MULTIPLAYER_SQL, () => {
+            patchQueryById(COLLAB_QUERY_ID, { status: "ready" });
+            // move onto the Run button, then "click" it
+            glideCursor(RUN_POINT, 600, { onDone: () => schedule(220, collabRun) });
+          }),
+        );
+      },
+    });
+  }, [pressCursor, setNodes, onCollabRun, glideCursor, patchQueryById, schedule, fitView, streamSqlInto, collabRun]);
+
+  const startCollab = useCallback(() => {
+    if (phase.current !== "charted") {
+      return;
+    }
+    phase.current = "collabJoining";
+    setCollabJoined(true);
+
+    // Anna's cursor enters from off-canvas; the camera pans to the work area
+    cursorPos.current = { ...CURSOR_START };
+    setCursor({ x: CURSOR_START.x, y: CURSOR_START.y, pressed: false });
+    schedule(60, () => glideCursor(COLLAB_QUERY_POSITION, 950));
+    schedule(80, () => setCenter(1420, 720, { zoom: 0.8, duration: 950 }));
+    schedule(1150, collabCreateQuery);
+  }, [schedule, glideCursor, setCenter, collabCreateQuery]);
+
+  // Visualize the result's numeric column as a bar chart node, then hand off to
+  // the multiplayer finale a beat later.
   const chart = useCallback(() => {
     if (phase.current !== "resultReady" && phase.current !== "referenced") {
       return;
@@ -263,6 +450,8 @@ export function useDemoFlow() {
       ...current.filter(edge => edge.id !== "result-chart"),
       floatingEdge("result-chart", RESULT_ID, CHART_ID, CHART_COLOR),
     ]);
+    phase.current = "charted";
+
     schedule(140, () =>
       fitView({
         nodes: [{ id: RESULT_ID }, { id: CHART_ID }],
@@ -271,13 +460,18 @@ export function useDemoFlow() {
         maxZoom: 1,
       }),
     );
-  }, [setNodes, setEdges, schedule, fitView]);
+    // show the chart, then a beat, then Anna flies in
+    schedule(1500, startCollab);
+  }, [setNodes, setEdges, schedule, fitView, startCollab]);
 
   chartRef.current = chart;
 
   const reset = useCallback(() => {
     clearTimers();
     phase.current = "idle";
+    setCollabJoined(false);
+    setCursor(null);
+    cursorPos.current = { ...CURSOR_START };
     setEdges([]);
     setNodes([createAgentNode(onSend)]);
     schedule(60, () =>
@@ -292,5 +486,5 @@ export function useDemoFlow() {
 
   useEffect(() => clearTimers, [clearTimers]);
 
-  return { nodes, edges, onNodesChange, onEdgesChange, reset };
+  return { nodes, edges, onNodesChange, onEdgesChange, reset, collabJoined, cursor };
 }

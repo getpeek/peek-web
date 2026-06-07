@@ -1,0 +1,60 @@
+/* Screen-space overlay for Anna's cursor (mirrors the product's
+   RemoteCursorsLayer). The pointer is a constant screen size — it does not scale
+   with canvas zoom — and `--pk-collab-anna` is the single source for its color. */
+.layer {
+  /* override the shared .react-flow__panel 16px inset so the panel origin lines
+     up with the pane origin (0,0) that our screen-coord math assumes */
+  margin: 0 !important;
+  inset: 0;
+  pointer-events: none;
+}
+
+.anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* smooth between tween steps + viewport deltas without lagging the camera */
+  transition: transform 70ms linear;
+  will-change: transform;
+}
+
+.cursor {
+  position: relative;
+  width: 0;
+  height: 0;
+  color: var(--pk-collab-anna);
+  transform-origin: 4px 3px;
+  transition: transform 0.12s ease;
+}
+.cursor.pressed {
+  transform: scale(0.82);
+}
+
+.pointer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+.label {
+  position: absolute;
+  top: 16px;
+  left: 14px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--pk-collab-anna);
+  color: #1a1206;
+  font: 600 11px var(--pk-font-mono);
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anchor,
+  .cursor {
+    transition: none;
+  }
+}

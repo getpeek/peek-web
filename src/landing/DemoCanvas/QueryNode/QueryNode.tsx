@@ -2,33 +2,41 @@
 
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 
-import { QUERY_META, QUERY_TITLE } from "../data";
 import { tokenizeSqlLine } from "./highlight";
 import styles from "./QueryNode.module.css";
 
 export type QueryStatus = "streaming" | "ready" | "running" | "done";
 
 export type QueryNodeData = {
+  title: string;
+  meta: string;
   sql: string;
   status: QueryStatus;
   onRun: () => void;
+  // when set, the node renders scaled from its top-left — drives the "drag to
+  // create" grow-out in the multiplayer demo (0 → 1 as the cursor drags)
+  createScale?: number;
 };
 
 export type QueryFlowNode = Node<QueryNodeData, "query">;
 
 export function QueryNode({ data }: NodeProps<QueryFlowNode>) {
-  const { sql, status, onRun } = data;
+  const { title, meta, sql, status, onRun, createScale } = data;
   const lines = sql.split("\n");
   const busy = status === "streaming" || status === "running";
+  const creating = createScale !== undefined;
 
   return (
-    <div className={styles.node}>
+    <div
+      className={`${styles.node} ${creating ? styles.creating : ""}`}
+      style={creating ? { transform: `scale(${createScale})`, transformOrigin: "top left" } : undefined}
+    >
       <Handle type='target' position={Position.Left} className={styles.handle} />
 
       <header className={styles.head}>
         <span className={styles.typeDot} />
         <span className={styles.typeTag}>QUERY</span>
-        <span className={styles.title}>{QUERY_TITLE}</span>
+        <span className={styles.title}>{title}</span>
       </header>
 
       <div className={styles.body}>
@@ -52,7 +60,7 @@ export function QueryNode({ data }: NodeProps<QueryFlowNode>) {
         </div>
 
         <div className={styles.foot}>
-          <span className={styles.meta}>{QUERY_META}</span>
+          <span className={styles.meta}>{meta}</span>
           {status === "streaming" ? null : (
             <button
               type='button'

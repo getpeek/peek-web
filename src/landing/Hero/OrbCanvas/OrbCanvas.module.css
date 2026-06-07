@@ -14,6 +14,10 @@
   display: block;
   width: 100%;
   height: 100%;
+  /* Upward-cast shadow off the orb's alpha silhouette, so the planet reads as
+     floating in front of the wordmark it overlaps. Negative y throws it up onto
+     the "Peek" ink for the 3D lift. */
+  filter: drop-shadow(0 -14px 26px rgba(8, 6, 22, 0.5));
 }
 
 /* ambient backlight + no-WebGL fallback, roughly where the orb sits */
