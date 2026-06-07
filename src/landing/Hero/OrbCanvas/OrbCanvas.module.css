@@ -1,12 +1,10 @@
+/* fills the whole hero section so the bloom + cursor interaction span it */
 .wrap {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -30%);
-  /* in front of the wordmark (z-index 3) so the planet partially occludes it */
-  z-index: 4;
-  width: 560px;
-  height: 560px;
+  inset: 0;
+  /* above the wordmark (z-index 1) so the planet partially occludes it, but
+     below the rest of the hero content (z-index 3) which stays readable */
+  z-index: 2;
   pointer-events: none;
 }
 
@@ -18,22 +16,19 @@
   height: 100%;
 }
 
-/* ambient backlight — also the graceful fallback when WebGL2 is unavailable */
+/* ambient backlight + no-WebGL fallback, roughly where the orb sits */
 .fallback {
   position: absolute;
-  inset: 12%;
+  left: 50%;
+  top: 34%;
+  width: 38%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
-    circle at 50% 50%,
-    rgba(81, 128, 230, 0.18),
+    circle,
+    rgba(81, 128, 230, 0.16),
     transparent 70%
   );
-  filter: blur(24px);
-}
-
-@media (max-width: 1080px) {
-  .wrap {
-    width: 360px;
-    height: 360px;
-  }
+  filter: blur(28px);
 }

@@ -4,6 +4,8 @@ import { OrbCanvas } from "./OrbCanvas/OrbCanvas";
 export function Hero() {
   return (
     <section className={styles.hero}>
+      <OrbCanvas />
+
       <svg className={styles.rings} viewBox="0 0 1400 1400" aria-hidden="true">
         <circle cx="700" cy="700" r="280" />
         <circle cx="700" cy="700" r="440" />
@@ -16,7 +18,6 @@ export function Hero() {
       </div>
 
       <div className={styles.wordmarkWrap}>
-        <OrbCanvas />
         <h1 className={styles.wordmark}>Peek</h1>
       </div>
 

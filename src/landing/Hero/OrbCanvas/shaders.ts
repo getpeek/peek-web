@@ -18,6 +18,8 @@ out vec4 fragColor;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_pixelRatio;
+uniform vec2 u_center;   // orb centre in st-space (x left+, y up+)
+uniform float u_radius;  // orb radius in st-space
 
 vec2 coord(in vec2 p) {
   p = p / u_resolution.xy;
@@ -64,15 +66,15 @@ void main() {
 
   // Filled planet: edge crisp by default (just sub-pixel AA via fwidth), blooming
   // into a soft gradient cloud where the lens sits — exactly like demo var=1.
-  float sd = sdCircle(st, vec2(0.5));
+  float sd = sdCircle(st, u_center);
   float edge = max(lens * 1.4, fwidth(sd));
-  float mask = fill(sd, 0.58, edge);
+  float mask = fill(sd, u_radius * 2.0, edge);
 
   // Linear gradient on the -143° axis: blue (bottom-left) -> mauve -> yellow
   // (top-right). In st-space x increases leftward and y upward, so this dir
   // points up-right; projecting onto it gives the 0..1 ramp across the circle.
   vec2 dir = vec2(-0.7986, 0.6018);
-  float g = clamp(0.5 + dot(st - vec2(0.5), dir) / (2.0 * 0.29), 0.0, 1.0);
+  float g = clamp(0.5 + dot(st - u_center, dir) / (2.0 * u_radius), 0.0, 1.0);
 
   // Straight alpha (premultipliedAlpha:false); the opaque interior partially
   // occludes the wordmark rendered behind this canvas.

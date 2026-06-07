@@ -3,6 +3,11 @@ import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
 
 const DAMP_LAMBDA = 8;
 const MAX_DPR = 2;
+// Orb geometry in the shader's st-space (resolution-independent). y is bottom-up;
+// 0.66 sits in the upper area, behind the "Peek" wordmark. Shared with the shader
+// (as uniforms) and the resting-blur math so they always agree.
+const ORB_CENTER_Y = 0.66;
+const ORB_RADIUS = 0.14;
 
 export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
@@ -26,11 +31,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     // a single triangle large enough to cover clip space
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 3, -1, -1, 3]),
-      gl.STATIC_DRAW,
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const aPosition = gl.getAttribLocation(program, "a_position");
     gl.enableVertexAttribArray(aPosition);
     gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
@@ -39,6 +40,8 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const uResolution = gl.getUniformLocation(program, "u_resolution");
     const uMouse = gl.getUniformLocation(program, "u_mouse");
     const uPixelRatio = gl.getUniformLocation(program, "u_pixelRatio");
+    gl.uniform2f(gl.getUniformLocation(program, "u_center"), 0.5, ORB_CENTER_Y);
+    gl.uniform1f(gl.getUniformLocation(program, "u_radius"), ORB_RADIUS);
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
@@ -57,10 +60,13 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const target = { x: 0, y: 0 };
     const current = { x: 0, y: 0 };
     // Resting blur position when the orb isn't hovered: horizontally centred,
-    // ~2/3 down the orb. y is bottom-up (matching gl_FragCoord / u_mouse).
+    // ~2/3 down the orb (in bottom-up px, matching gl_FragCoord / u_mouse).
     const restTarget = () => {
       const rect = canvas.getBoundingClientRect();
-      return { x: rect.width / 2, y: rect.height * 0.38 };
+      return {
+        x: rect.width / 2,
+        y: (ORB_CENTER_Y - ORB_RADIUS / 3) * rect.height,
+      };
     };
     const setRest = () => {
       const rest = restTarget();
@@ -71,8 +77,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const yFromTop = event.clientY - rect.top;
-      const inside =
-        x >= 0 && x <= rect.width && yFromTop >= 0 && yFromTop <= rect.height;
+      const inside = x >= 0 && x <= rect.width && yFromTop >= 0 && yFromTop <= rect.height;
       if (inside) {
         target.x = x;
         target.y = rect.height - yFromTop; // flip to bottom-up
@@ -91,9 +96,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let raf = 0;
     let last = 0;
