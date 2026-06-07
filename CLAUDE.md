@@ -113,6 +113,37 @@ non-obvious — a hidden constraint, a workaround, a subtle ordering requirement
   (`className={clsx(styles.node, entered && styles.entered)}`), not by string
   class manipulation — CSS Module class names are hashed.
 
+## Responsive (mobile-first)
+
+Every section has to work on mobile — no part of the site is desktop-only. Treat
+small screens as the default, not an afterthought.
+
+- **Write mobile-first.** The base, breakpoint-free rules are the mobile layout.
+  Layer the larger-screen styles on top inside a `min-width` media query —
+  never start desktop and patch downward with `max-width` overrides.
+- **One breakpoint is enough.** Go straight from mobile to everything else; the
+  site uses `@media (min-width: 768px)` as that single breakpoint value. Don't
+  add tablet / desktop tiers unless a section genuinely can't be served by the two.
+- **Nest the media query inside the rule it overrides** — not in a separate block
+  at the bottom of the file. Put the `@media (min-width: 768px)` override directly
+  inside the selector whose declarations it changes, so the mobile base and its
+  larger-screen variant sit together and it's obvious at a glance which rules are
+  overridden at which size. A file therefore has many small nested `@media` blocks
+  (one per overridden selector, all sharing the same breakpoint), never one big
+  trailing block that forces you to cross-reference selectors by name.
+
+  ```css
+  .hero {
+    padding: 2rem 1rem;
+
+    @media (min-width: 768px) {
+      padding: 6rem 3rem;
+    }
+  }
+  ```
+- Prefer fluid sizing (`clamp()`, `vw`/`vh`) over per-breakpoint values where it
+  removes the need for an override.
+
 # Commands
 
 - `npm run dev` — Next dev server (Turbopack).

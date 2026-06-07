@@ -3,13 +3,14 @@
   z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 32px 80px;
+  gap: 20px;
+  padding: 20px;
   max-width: 1600px;
   margin: 0 auto;
 }
 
 .brand {
+  flex-shrink: 0;
   font-family: var(--pk-font-display);
   font-style: italic;
   font-weight: 800;
@@ -20,17 +21,32 @@
 
 .links {
   display: flex;
-  gap: 36px;
+  flex-wrap: nowrap;
+  gap: 24px;
   font-size: 12px;
   color: var(--pk-ink-2);
   letter-spacing: 0.04em;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  & a {
+    flex-shrink: 0;
+  }
 
   & a:hover {
     color: var(--pk-ink);
   }
 }
 
+/* Hidden on mobile; the beta CTA only appears at the wider breakpoint. */
 .ctaMini {
+  display: none;
   padding: 10px 18px;
   border-radius: 99px;
   border: 1px solid var(--pk-hairline-2);
@@ -45,8 +61,19 @@
   }
 }
 
-@media (max-width: 1080px) {
+@media (min-width: 768px) {
   .nav {
-    padding: 24px 32px;
+    justify-content: space-between;
+    gap: 36px;
+    padding: 32px 80px;
+  }
+
+  .links {
+    gap: 36px;
+    overflow-x: visible;
+  }
+
+  .ctaMini {
+    display: inline-block;
   }
 }

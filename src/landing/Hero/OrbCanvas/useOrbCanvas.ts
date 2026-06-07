@@ -11,6 +11,24 @@ const ORB_RADIUS = 0.18;
 // How far (in orb radii) the cursor may stray before the blur eases back to its
 // resting spot instead of following the pointer.
 const ORB_REACH = 3.0;
+// The design Y as a top-down fraction (matches ORB_CENTER_Y in landscape).
+const DESIGN_TOP_FRACTION = 1 - ORB_CENTER_Y;
+// The wordmark we anchor the orb to, and how far below its centre the orb centre
+// sits (in orb radii) so the heading reads on the planet's upper hemisphere.
+const ANCHOR_SELECTOR = "[data-orb-anchor]";
+const ORB_BELOW_ANCHOR = 0.7;
+// Extra push-down (CSS px) below the radius-based offset, so the wordmark stays
+// readable above the planet.
+const ORB_OFFSET_PX = 80;
+
+// Invert the shader's coord() y-remap so a desired top-down fraction renders at
+// that exact line regardless of aspect. coord() only remaps y in portrait, so
+// landscape passes the bottom-up fraction straight through.
+function centerYFromTopFraction(topFraction: number, width: number, height: number) {
+  const fragFromBottom = 1 - topFraction;
+  if (width >= height) return fragFromBottom;
+  return fragFromBottom * (height / width) + (width - height) / (2 * width);
+}
 
 function cubicBezier(t: number, p0: number, p1: number, p2: number, p3: number) {
   const mt = 1 - t;
@@ -52,19 +70,53 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const uResolution = gl.getUniformLocation(program, "u_resolution");
     const uMouse = gl.getUniformLocation(program, "u_mouse");
     const uPixelRatio = gl.getUniformLocation(program, "u_pixelRatio");
-    gl.uniform2f(gl.getUniformLocation(program, "u_center"), 0.5, ORB_CENTER_Y);
+    const uCenter = gl.getUniformLocation(program, "u_center");
     gl.uniform1f(gl.getUniformLocation(program, "u_radius"), ORB_RADIUS);
+
+    // Orb geometry in canvas-local CSS px, recomputed on resize. The radius keys
+    // off the SHORTER dimension (matching the shader's coord()); the centre is
+    // anchored a fixed distance below the wordmark so it stays glued to the
+    // heading at every viewport size. The blur targets below derive from these
+    // pixel values — driving them off orbCenterY/height instead lets the blur
+    // drift up the orb as the screen narrows (orbCenterY is inflated in portrait
+    // to undo coord()'s y-remap, and the radius isn't a fraction of height).
+    let orbCenterY = ORB_CENTER_Y; // st-space, for the shader uniform
+    let orbCenterFromTop = 0; // CSS px, top-down
+    let orbRadiusPx = 0; // CSS px
+
+    const updateOrbGeometry = (cssWidth: number, cssHeight: number) => {
+      orbRadiusPx = ORB_RADIUS * Math.min(cssWidth, cssHeight);
+      const anchor = document.querySelector(ANCHOR_SELECTOR);
+      if (!anchor || cssHeight === 0) {
+        orbCenterFromTop = DESIGN_TOP_FRACTION * cssHeight;
+        return;
+      }
+      const canvasRect = canvas.getBoundingClientRect();
+      const anchorRect = anchor.getBoundingClientRect();
+      orbCenterFromTop =
+        anchorRect.top -
+        canvasRect.top +
+        anchorRect.height / 2 +
+        ORB_BELOW_ANCHOR * orbRadiusPx +
+        ORB_OFFSET_PX;
+    };
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
-      const width = Math.max(1, Math.round(canvas.clientWidth * dpr));
-      const height = Math.max(1, Math.round(canvas.clientHeight * dpr));
+      const cssWidth = canvas.clientWidth;
+      const cssHeight = canvas.clientHeight;
+      const width = Math.max(1, Math.round(cssWidth * dpr));
+      const height = Math.max(1, Math.round(cssHeight * dpr));
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
       }
+      updateOrbGeometry(cssWidth, cssHeight);
+      const topFraction = cssHeight > 0 ? orbCenterFromTop / cssHeight : DESIGN_TOP_FRACTION;
+      orbCenterY = centerYFromTopFraction(topFraction, width, height);
       gl.viewport(0, 0, width, height);
       gl.uniform2f(uResolution, width, height);
+      gl.uniform2f(uCenter, 0.5, orbCenterY);
       gl.uniform1f(uPixelRatio, dpr);
     };
 
@@ -77,7 +129,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const rect = canvas.getBoundingClientRect();
       return {
         x: rect.width / 2,
-        y: (ORB_CENTER_Y - ORB_RADIUS / 1.5) * rect.height,
+        y: rect.height - orbCenterFromTop - orbRadiusPx / 1.5,
       };
     };
     const setRest = () => {
@@ -94,8 +146,8 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const introPos = (te: number) => {
       const rect = canvas.getBoundingClientRect();
       const cx = rect.width / 2;
-      const cy = ORB_CENTER_Y * rect.height;
-      const r = ORB_RADIUS * rect.height;
+      const cy = rect.height - orbCenterFromTop; // bottom-up
+      const r = orbRadiusPx;
       // P0 top-right → sweep down the right side (arch) → P3 rest (centre,
       // just below the ball). y is bottom-up, so +y is up.
       return {
@@ -111,8 +163,8 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       // distance from the orb centre (in px); the orb radius keys off the
       // shorter canvas dimension, matching the shader's coord() aspect handling.
       const orbX = rect.width / 2;
-      const orbYFromTop = (1 - ORB_CENTER_Y) * rect.height;
-      const orbR = ORB_RADIUS * Math.min(rect.width, rect.height);
+      const orbYFromTop = orbCenterFromTop;
+      const orbR = orbRadiusPx;
       const near = Math.hypot(x - orbX, yFromTop - orbYFromTop) <= orbR * ORB_REACH;
       if (near) {
         introDone = true; // genuine interaction takes over from the intro
@@ -184,6 +236,10 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       renderFrame();
     });
     resizeObserver.observe(canvas);
+    // also watch the wordmark: when it reflows (web font load, line wrap) the orb
+    // must re-anchor even though the canvas size hasn't changed.
+    const anchor = document.querySelector(ANCHOR_SELECTOR);
+    if (anchor) resizeObserver.observe(anchor);
 
     // pause when the orb scrolls out of view or the tab is hidden
     const intersectionObserver = new IntersectionObserver(

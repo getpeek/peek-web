@@ -18,12 +18,13 @@ export function Hero() {
       </div>
 
       <div className={styles.wordmarkWrap}>
-        <h1 className={styles.wordmark}>Peek</h1>
+        <h1 className={styles.wordmark} data-orb-anchor>
+          Peek
+        </h1>
       </div>
 
       <p className={styles.tagline}>
-        A GUI database client for people who think in <em>2D</em>. Explore, edit, chart and chat
-        with your data on an infinite canvas.
+        A DB GUI that helps you <em>explore your data</em>. Open source and free for ever.
       </p>
 
       <div className={styles.heroCta}>
