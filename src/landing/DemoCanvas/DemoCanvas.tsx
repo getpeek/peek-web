@@ -47,7 +47,8 @@ export function DemoCanvas() {
 }
 
 function Flow() {
-  const { nodes, edges, onNodesChange, onEdgesChange, reset, collabJoined, cursor } = useDemoFlow();
+  const { nodes, edges, onNodesChange, onEdgesChange, reset, startCollab, collabJoined, cursor } =
+    useDemoFlow();
 
   return (
     <ReactFlow
@@ -77,12 +78,20 @@ function Flow() {
         bgColor='transparent'
       />
       <CollabOverlay cursor={cursor} />
-      <CanvasChrome onReset={reset} collabJoined={collabJoined} />
+      <CanvasChrome onReset={reset} onShare={startCollab} collabJoined={collabJoined} />
     </ReactFlow>
   );
 }
 
-function CanvasChrome({ onReset, collabJoined }: { onReset: () => void; collabJoined: boolean }) {
+function CanvasChrome({
+  onReset,
+  onShare,
+  collabJoined,
+}: {
+  onReset: () => void;
+  onShare: () => void;
+  collabJoined: boolean;
+}) {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const { zoom } = useViewport();
 
@@ -101,7 +110,31 @@ function CanvasChrome({ onReset, collabJoined }: { onReset: () => void; collabJo
             >
               {ANNA.initials}
             </span>
-          ) : null}
+          ) : (
+            <span className={styles.shareWrap}>
+              <button
+                type='button'
+                className={`${styles.shareBtn} pk-shimmer`}
+                onClick={onShare}
+              >
+                <svg
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth={2.2}
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                >
+                  <circle cx='18' cy='5' r='3' />
+                  <circle cx='6' cy='12' r='3' />
+                  <circle cx='18' cy='19' r='3' />
+                  <path d='m8.6 13.5 6.8 4M15.4 6.5l-6.8 4' />
+                </svg>
+                Share
+              </button>
+              <span className={styles.shareTip}>peek://abc123xyz</span>
+            </span>
+          )}
           <div className={styles.canvasTab}>
             <span className={styles.liveDot} />
             <span className={styles.conn}>analytics_db</span>

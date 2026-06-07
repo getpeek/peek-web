@@ -300,7 +300,11 @@ export function useDemoFlow() {
   // a different id moves the reference subtree to that user.
   const reference = useCallback(
     (userId: string) => {
-      if (phase.current !== "resultReady" && phase.current !== "referenced") {
+      if (
+        phase.current !== "resultReady" &&
+        phase.current !== "referenced" &&
+        phase.current !== "collabDone"
+      ) {
         return;
       }
       phase.current = "referenced";
@@ -415,7 +419,7 @@ export function useDemoFlow() {
   }, [pressCursor, setNodes, onCollabRun, glideCursor, patchQueryById, schedule, fitView, streamSqlInto, collabRun]);
 
   const startCollab = useCallback(() => {
-    if (phase.current !== "charted") {
+    if (phase.current.startsWith("collab")) {
       return;
     }
     phase.current = "collabJoining";
@@ -429,8 +433,8 @@ export function useDemoFlow() {
     schedule(1150, collabCreateQuery);
   }, [schedule, glideCursor, setCenter, collabCreateQuery]);
 
-  // Visualize the result's numeric column as a bar chart node, then hand off to
-  // the multiplayer finale a beat later.
+  // Visualize the result's numeric column as a bar chart node. The multiplayer
+  // finale is now user-initiated via the titlebar Share button (startCollab).
   const chart = useCallback(() => {
     if (phase.current !== "resultReady" && phase.current !== "referenced") {
       return;
@@ -460,9 +464,7 @@ export function useDemoFlow() {
         maxZoom: 1,
       }),
     );
-    // show the chart, then a beat, then Anna flies in
-    schedule(1500, startCollab);
-  }, [setNodes, setEdges, schedule, fitView, startCollab]);
+  }, [setNodes, setEdges, schedule, fitView]);
 
   chartRef.current = chart;
 
@@ -486,5 +488,5 @@ export function useDemoFlow() {
 
   useEffect(() => clearTimers, [clearTimers]);
 
-  return { nodes, edges, onNodesChange, onEdgesChange, reset, collabJoined, cursor };
+  return { nodes, edges, onNodesChange, onEdgesChange, reset, startCollab, collabJoined, cursor };
 }

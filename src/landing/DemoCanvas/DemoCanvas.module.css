@@ -1,6 +1,8 @@
 .section {
   position: relative;
-  padding: 60px 0 120px;
+  /* horizontal gutter on mobile leaves bare page beside the canvas so a touch
+     drag there scrolls the page — the canvas itself eats all pan/zoom input */
+  padding: 60px 24px 120px;
 
   @media (min-width: 768px) {
     padding: 80px 0 200px;
@@ -125,6 +127,70 @@
   }
 }
 
+/* titlebar invite affordance — swapped in-place for Anna's avatar once she joins */
+.shareWrap {
+  position: relative;
+  display: inline-flex;
+
+  &:hover .shareTip,
+  &:focus-within .shareTip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* the shareable workspace link, revealed below the button on hover */
+.shareTip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: 5px 10px;
+  background: var(--pk-card);
+  border: 1px solid var(--pk-hairline);
+  border-radius: 7px;
+  backdrop-filter: blur(10px);
+  font-family: var(--pk-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--pk-ink);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.shareBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  background: var(--pk-card);
+  border: 1px solid var(--pk-hairline);
+  border-radius: 99px;
+  backdrop-filter: blur(10px);
+  font-family: var(--pk-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--pk-ink-2);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    color: var(--pk-ink);
+    border-color: var(--pk-hairline-2);
+  }
+
+  & svg {
+    width: 11px;
+    height: 11px;
+  }
+}
+
 .resetBtn {
   display: inline-flex;
   align-items: center;
@@ -153,9 +219,14 @@
 }
 
 .zoomCluster {
-  display: inline-flex;
+  /* hidden on mobile so only the toolbar shows; revealed ≥768px */
+  display: none;
   align-items: center;
   gap: 1px;
+
+  @media (min-width: 768px) {
+    display: inline-flex;
+  }
   padding: 3px;
   background: var(--pk-card);
   border: 1px solid var(--pk-hairline);
