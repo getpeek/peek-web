@@ -1,4 +1,6 @@
 import { useEffect, type RefObject } from "react";
+import { createProgram } from "./glProgram";
+import { centerYFromTopFraction, cubicBezier, easeInOut } from "./orbMath";
 import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
 
 const DAMP_LAMBDA = 8;
@@ -21,28 +23,12 @@ const ORB_BELOW_ANCHOR = 0.7;
 // readable above the planet.
 const ORB_OFFSET_PX = 80;
 
-// Invert the shader's coord() y-remap so a desired top-down fraction renders at
-// that exact line regardless of aspect. coord() only remaps y in portrait, so
-// landscape passes the bottom-up fraction straight through.
-function centerYFromTopFraction(topFraction: number, width: number, height: number) {
-  const fragFromBottom = 1 - topFraction;
-  if (width >= height) return fragFromBottom;
-  return fragFromBottom * (height / width) + (width - height) / (2 * width);
-}
-
-function cubicBezier(t: number, p0: number, p1: number, p2: number, p3: number) {
-  const mt = 1 - t;
-  return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
-}
-
-function easeInOut(t: number) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-
 export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     const gl = canvas.getContext("webgl2", {
       alpha: true,
@@ -55,10 +41,15 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       premultipliedAlpha: true,
       antialias: true,
     });
-    if (!gl) return; // no WebGL2 → the CSS ambient fallback stays visible
+    if (!gl) {
+      // no WebGL2 → the CSS ambient fallback stays visible
+      return;
+    }
 
     const program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER);
-    if (!program) return;
+    if (!program) {
+      return;
+    }
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -82,9 +73,12 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     // pixel values — driving them off orbCenterY/height instead lets the blur
     // drift up the orb as the screen narrows (orbCenterY is inflated in portrait
     // to undo coord()'s y-remap, and the radius isn't a fraction of height).
-    let orbCenterY = ORB_CENTER_Y; // st-space, for the shader uniform
-    let orbCenterFromTop = 0; // CSS px, top-down
-    let orbRadiusPx = 0; // CSS px
+    // st-space, for the shader uniform
+    let orbCenterY = ORB_CENTER_Y;
+    // CSS px, top-down
+    let orbCenterFromTop = 0;
+    // CSS px
+    let orbRadiusPx = 0;
 
     const updateOrbGeometry = (cssWidth: number, cssHeight: number) => {
       orbRadiusPx = ORB_RADIUS * Math.min(cssWidth, cssHeight);
@@ -148,7 +142,8 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const introPos = (te: number) => {
       const rect = canvas.getBoundingClientRect();
       const cx = rect.width / 2;
-      const cy = rect.height - orbCenterFromTop; // bottom-up
+      // bottom-up
+      const cy = rect.height - orbCenterFromTop;
       const r = orbRadiusPx;
       // P0 top-right → sweep down the right side (arch) → P3 rest (centre,
       // just below the ball). y is bottom-up, so +y is up.
@@ -169,9 +164,11 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const orbR = orbRadiusPx;
       const near = Math.hypot(x - orbX, yFromTop - orbYFromTop) <= orbR * ORB_REACH;
       if (near) {
-        introDone = true; // genuine interaction takes over from the intro
+        // genuine interaction takes over from the intro
+        introDone = true;
         target.x = x;
-        target.y = rect.height - yFromTop; // flip to bottom-up
+        // flip to bottom-up
+        target.y = rect.height - yFromTop;
       } else {
         // cursor too far from the orb → ease back to the resting position
         const rest = restTarget();
@@ -195,43 +192,53 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const tick = (now: number) => {
       const dt = last ? (now - last) / 1000 : 0;
       last = now;
-      if (!introDone) {
-        // play the intro arc, easing along the Bézier toward the rest spot
-        if (!introStart) introStart = now;
-        const t = Math.min((now - introStart) / INTRO_MS, 1);
-        const pos = introPos(easeInOut(t));
-        current.x = pos.x;
-        current.y = pos.y;
-        if (t >= 1) introDone = true;
-      } else {
+      if (introDone) {
         // pointer-driven only (no autonomous motion); reduced motion snaps.
         const k = reduceMotion ? 1 : 1 - Math.exp(-DAMP_LAMBDA * dt);
         current.x += (target.x - current.x) * k;
         current.y += (target.y - current.y) * k;
+      } else {
+        // play the intro arc, easing along the Bézier toward the rest spot
+        if (!introStart) {
+          introStart = now;
+        }
+        const t = Math.min((now - introStart) / INTRO_MS, 1);
+        const pos = introPos(easeInOut(t));
+        current.x = pos.x;
+        current.y = pos.y;
+        if (t >= 1) {
+          introDone = true;
+        }
       }
       renderFrame();
       raf = requestAnimationFrame(tick);
     };
     const start = () => {
-      if (raf || !onscreen || document.hidden) return;
+      if (raf || !onscreen || document.hidden) {
+        return;
+      }
       last = 0;
       raf = requestAnimationFrame(tick);
     };
     const stop = () => {
-      if (raf) cancelAnimationFrame(raf);
+      if (raf) {
+        cancelAnimationFrame(raf);
+      }
       raf = 0;
     };
 
     resize();
     setRest();
     if (reduceMotion) {
-      introDone = true; // honour reduced motion: skip the intro animation
+      // honour reduced motion: skip the intro animation
+      introDone = true;
     } else {
       const begin = introPos(0);
       current.x = begin.x;
       current.y = begin.y;
     }
-    renderFrame(); // paint the starting frame before the loop runs
+    // paint the starting frame before the loop runs
+    renderFrame();
 
     const resizeObserver = new ResizeObserver(() => {
       resize();
@@ -241,14 +248,19 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     // also watch the wordmark: when it reflows (web font load, line wrap) the orb
     // must re-anchor even though the canvas size hasn't changed.
     const anchor = document.querySelector(ANCHOR_SELECTOR);
-    if (anchor) resizeObserver.observe(anchor);
+    if (anchor) {
+      resizeObserver.observe(anchor);
+    }
 
     // pause when the orb scrolls out of view or the tab is hidden
     const intersectionObserver = new IntersectionObserver(
       ([entry]) => {
         onscreen = entry.isIntersecting;
-        if (onscreen) start();
-        else stop();
+        if (onscreen) {
+          start();
+        } else {
+          stop();
+        }
       },
       { threshold: 0 },
     );
@@ -273,37 +285,4 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       // is released on GC, which is fine for one small page-lifetime canvas.
     };
   }, [canvasRef]);
-}
-
-function createShader(
-  gl: WebGL2RenderingContext,
-  type: number,
-  source: string,
-): WebGLShader | null {
-  const shader = gl.createShader(type);
-  if (!shader) return null;
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader;
-  console.error("OrbCanvas shader compile failed:", gl.getShaderInfoLog(shader));
-  gl.deleteShader(shader);
-  return null;
-}
-
-function createProgram(
-  gl: WebGL2RenderingContext,
-  vertexSource: string,
-  fragmentSource: string,
-): WebGLProgram | null {
-  const vertex = createShader(gl, gl.VERTEX_SHADER, vertexSource);
-  const fragment = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
-  if (!vertex || !fragment) return null;
-  const program = gl.createProgram();
-  if (!program) return null;
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  gl.linkProgram(program);
-  if (gl.getProgramParameter(program, gl.LINK_STATUS)) return program;
-  console.error("OrbCanvas program link failed:", gl.getProgramInfoLog(program));
-  return null;
 }

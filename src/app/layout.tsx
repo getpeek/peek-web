@@ -35,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang='en'
       className={`${jetBrainsMono.variable} ${montserrat.variable} ${inter.variable}`}
     >
       <body>{children}</body>

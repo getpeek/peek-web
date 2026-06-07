@@ -28,7 +28,9 @@
 /* yellow spawn glow (chart type colour) */
 @keyframes glowPop {
   0% {
-    box-shadow: var(--pk-node-shadow), 0 0 0 0 rgba(218, 230, 81, 0);
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 0 rgba(218, 230, 81, 0);
   }
   40% {
     box-shadow:
@@ -37,7 +39,9 @@
       0 0 40px 4px rgba(218, 230, 81, 0.4);
   }
   100% {
-    box-shadow: var(--pk-node-shadow), 0 0 0 0 transparent;
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 0 transparent;
   }
 }
 

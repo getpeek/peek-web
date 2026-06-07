@@ -10,7 +10,7 @@ export type SqlToken = {
 
 // Longer multi-word keywords come first so the alternation matches them greedily.
 const PATTERN =
-  /(\b(?:GROUP BY|ORDER BY|LEFT JOIN|INNER JOIN|SELECT|FROM|WHERE|LIMIT|JOIN|ON|AND|OR|AS|DESC|ASC)\b)|(\b(?:COUNT|SUM|AVG|MAX|MIN)\b)|('[^']*')|(\b\d+\b)|(@\w+)/g;
+  /(\b(?:GROUP BY|ORDER BY|LEFT JOIN|INNER JOIN|SELECT|FROM|WHERE|LIMIT|JOIN|ON|AND|OR|AS|DESC|ASC)\b)|(\b(?:COUNT|SUM|AVG|MAX|MIN)\b)|('[^']*')|(\b\d+\b)|(@\w+)/gu;
 
 export function tokenizeSqlLine(line: string): SqlToken[] {
   const tokens: SqlToken[] = [];

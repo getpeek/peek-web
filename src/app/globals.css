@@ -32,21 +32,15 @@
   --pk-type-chart: var(--pk-yellow);
   --pk-type-variable: var(--pk-mauve);
   --pk-radius-node: 10px;
-  --pk-node-bg: linear-gradient(
-    180deg,
-    rgba(22, 20, 28, 0.92) 0%,
-    rgba(18, 16, 24, 0.92) 100%
-  );
+  --pk-node-bg: linear-gradient(180deg, rgba(22, 20, 28, 0.92) 0%, rgba(18, 16, 24, 0.92) 100%);
   --pk-node-border: rgba(255, 255, 255, 0.08);
-  --pk-node-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --pk-node-shadow: 0 18px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
   /* Type — *-font vars are provided by next/font in layout.tsx */
-  --pk-font-mono: var(--font-jetbrains-mono), "Monaspace Krypton", ui-monospace,
-    SFMono-Regular, Menlo, monospace;
+  --pk-font-mono:
+    var(--font-jetbrains-mono), "Monaspace Krypton", ui-monospace, SFMono-Regular, Menlo, monospace;
   --pk-font-display: var(--font-inter), system-ui, sans-serif;
-  --pk-font-section: var(--font-montserrat), var(--font-inter), system-ui,
-    sans-serif;
+  --pk-font-section: var(--font-montserrat), var(--font-inter), system-ui, sans-serif;
 }
 
 * {
@@ -106,4 +100,52 @@ a {
   syntax: "<color>";
   initial-value: white;
   inherits: false;
+}
+
+/*
+ * Shared "this is interactive" affordance: a periodic diagonal light sweep.
+ * It originated on the demo canvas chart button and now marks every action
+ * button inside the canvas nodes (Agent send, Query run, Result chart + the
+ * follow-reference cells) so the cue reads the same on each. It lives here,
+ * like the shiny-CTA keyframes above, because it's shared by sibling node
+ * components rather than the property of any one. Apply it by adding the plain
+ * `pk-shimmer` class alongside a component's own module class. The host must be
+ * able to clip the sweep, so the utility sets position + overflow itself.
+ */
+.pk-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.pk-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 65%
+  );
+  transform: translateX(-130%);
+  animation: pkShimmer 2.6s ease-in-out infinite;
+}
+/* a shimmer reads as "clickable"; don't advertise a disabled control */
+.pk-shimmer:disabled::after,
+.pk-shimmer[aria-disabled="true"]::after {
+  display: none;
+}
+@keyframes pkShimmer {
+  0% {
+    transform: translateX(-130%);
+  }
+  55%,
+  100% {
+    transform: translateX(130%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pk-shimmer::after {
+    animation: none;
+  }
 }

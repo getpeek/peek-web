@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  BaseEdge,
-  getBezierPath,
-  useInternalNode,
-  type EdgeProps,
-} from "@xyflow/react";
+import { BaseEdge, getBezierPath, useInternalNode, type EdgeProps } from "@xyflow/react";
 
 import { getEdgeParams } from "./edges";
 
@@ -20,10 +15,7 @@ export function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps
     return null;
   }
 
-  const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
-    sourceNode,
-    targetNode,
-  );
+  const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(sourceNode, targetNode);
 
   const [path] = getBezierPath({
     sourceX: sx,

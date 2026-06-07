@@ -20,7 +20,7 @@ sections, a telemetry stats row, a closing CTA, and a footer.
 
 - **Framework**: Next.js 16 (**App Router**) — `src/app/`.
 - **UI**: React 19 with the **React Compiler enabled** (`next.config.ts:
-  reactCompiler: true`). Do not add manual `useMemo`/`useCallback`/`memo` unless
+reactCompiler: true`). Do not add manual `useMemo`/`useCallback`/`memo` unless
   you've verified the compiler can't handle it.
 - **Language**: TypeScript, `strict`. Path alias `@/*` → `src/*`.
 - **Styling**: CSS Modules (`*.module.css`), one per component, with native CSS
@@ -141,6 +141,7 @@ small screens as the default, not an afterthought.
     }
   }
   ```
+
 - Prefer fluid sizing (`clamp()`, `vw`/`vh`) over per-breakpoint values where it
   removes the need for an override.
 

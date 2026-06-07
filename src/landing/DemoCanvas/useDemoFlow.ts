@@ -1,94 +1,36 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { useEdgesState, useNodesState, useReactFlow, type Edge } from "@xyflow/react";
+
+import type { AgentNodeData } from "./AgentNode/AgentNode";
+import type { QueryNodeData } from "./QueryNode/QueryNode";
+import type { ResultNodeData } from "./ResultNode/ResultNode";
 import {
-  useEdgesState,
-  useNodesState,
-  useReactFlow,
-  type Edge,
-} from "@xyflow/react";
-
-import type { AgentFlowNode, AgentNodeData } from "./AgentNode/AgentNode";
-import type { QueryFlowNode, QueryNodeData } from "./QueryNode/QueryNode";
-import type { ResultFlowNode, ResultNodeData } from "./ResultNode/ResultNode";
-import type { ChartFlowNode } from "./ChartNode/ChartNode";
-import type { VariableFlowNode } from "./VariableNode/VariableNode";
-import {
-  AGENT_PROMPT,
-  AGENT_REPLY,
-  JOB_ADS_COLUMNS,
-  RESULT_COLUMNS,
-  RESULT_META,
-  RESULT_ROWS,
-  RESULT_TITLE,
-  SQL_TEXT,
-  USER_SETTINGS_COLUMNS,
-  VARIABLE_NAME,
-  VARIABLE_VALUE,
-  jobAdsRows,
-  userSettingsRows,
-} from "./data";
-
-type DemoNode =
-  | AgentFlowNode
-  | QueryFlowNode
-  | ResultFlowNode
-  | ChartFlowNode
-  | VariableFlowNode;
-type DemoPhase =
-  | "idle"
-  | "thinking"
-  | "queryStreaming"
-  | "queryReady"
-  | "running"
-  | "resultStreaming"
-  | "resultReady"
-  | "referenced";
-
-const AGENT_ID = "agent";
-const QUERY_ID = "query";
-const RESULT_ID = "result";
-const SETTINGS_ID = "ref-user_settings";
-const ADS_ID = "ref-job_ads";
-const CHART_ID = "chart";
-const VARIABLE_ID = "variable";
-
-const QUERY_COLOR = "rgb(186, 140, 240)";
-const RESULT_COLOR = "rgb(120, 200, 150)";
-const REFERENCE_COLOR = "rgb(81, 128, 230)";
-const CHART_COLOR = "rgb(218, 230, 81)";
-const VARIABLE_COLOR = "rgb(180, 129, 147)";
-
-const AGENT_POSITION = { x: 56, y: 110 };
-const QUERY_POSITION = { x: 540, y: 96 };
-const RESULT_POSITION = { x: 1020, y: 70 };
-const USER_SETTINGS_POSITION = { x: 820, y: 560 };
-const JOB_ADS_POSITION = { x: 1300, y: 560 };
-const CHART_POSITION = { x: 1500, y: 90 };
-const VARIABLE_POSITION = { x: 600, y: -150 };
-
-function createAgentNode(onSend: () => void): AgentFlowNode {
-  return {
-    id: AGENT_ID,
-    type: "agent",
-    position: AGENT_POSITION,
-    data: { draft: AGENT_PROMPT, messages: [], thinking: false, sent: false, onSend },
-  };
-}
-
-function floatingEdge(id: string, source: string, target: string, color: string): Edge {
-  return {
-    id,
-    source,
-    target,
-    type: "floating",
-    style: {
-      stroke: color,
-      strokeWidth: 1.6,
-      filter: `drop-shadow(0 0 6px ${color})`,
-    },
-  };
-}
+  ADS_ID,
+  AGENT_ID,
+  CHART_COLOR,
+  CHART_ID,
+  QUERY_COLOR,
+  QUERY_ID,
+  REFERENCE_COLOR,
+  RESULT_COLOR,
+  RESULT_ID,
+  SETTINGS_ID,
+  VARIABLE_COLOR,
+  VARIABLE_ID,
+  createAdsNode,
+  createAgentNode,
+  createChartNode,
+  createQueryNode,
+  createResultNode,
+  createSettingsNode,
+  createVariableNode,
+  floatingEdge,
+  type DemoNode,
+  type DemoPhase,
+} from "./flowGraph";
+import { AGENT_PROMPT, AGENT_REPLY, RESULT_COLUMNS, RESULT_ROWS, SQL_TEXT } from "./data";
 
 export function useDemoFlow() {
   const { fitView } = useReactFlow();
@@ -107,9 +49,7 @@ export function useDemoFlow() {
   const onReference = useCallback((userId: string) => referenceRef.current(userId), []);
   const onChart = useCallback(() => chartRef.current(), []);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<DemoNode>([
-    createAgentNode(onSend),
-  ]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<DemoNode>([createAgentNode(onSend)]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   const schedule = useCallback((ms: number, fn: () => void) => {
@@ -123,11 +63,9 @@ export function useDemoFlow() {
 
   const patchAgent = useCallback(
     (patch: Partial<AgentNodeData>) =>
-      setNodes((current) =>
-        current.map((node) =>
-          node.type === "agent"
-            ? { ...node, data: { ...node.data, ...patch } }
-            : node,
+      setNodes(current =>
+        current.map(node =>
+          node.type === "agent" ? { ...node, data: { ...node.data, ...patch } } : node,
         ),
       ),
     [setNodes],
@@ -135,11 +73,9 @@ export function useDemoFlow() {
 
   const patchQuery = useCallback(
     (patch: Partial<QueryNodeData>) =>
-      setNodes((current) =>
-        current.map((node) =>
-          node.type === "query"
-            ? { ...node, data: { ...node.data, ...patch } }
-            : node,
+      setNodes(current =>
+        current.map(node =>
+          node.type === "query" ? { ...node, data: { ...node.data, ...patch } } : node,
         ),
       ),
     [setNodes],
@@ -147,8 +83,8 @@ export function useDemoFlow() {
 
   const patchResultNode = useCallback(
     (id: string, patch: Partial<ResultNodeData>) =>
-      setNodes((current) =>
-        current.map((node) =>
+      setNodes(current =>
+        current.map(node =>
           node.id === id && node.type === "result"
             ? { ...node, data: { ...node.data, ...patch } }
             : node,
@@ -159,10 +95,8 @@ export function useDemoFlow() {
 
   const deanimateEdge = useCallback(
     (id: string) =>
-      setEdges((current) =>
-        current.map((edge) =>
-          edge.id === id ? { ...edge, animated: false } : edge,
-        ),
+      setEdges(current =>
+        current.map(edge => (edge.id === id ? { ...edge, animated: false } : edge)),
       ),
     [setEdges],
   );
@@ -199,7 +133,9 @@ export function useDemoFlow() {
   }, [patchResultNode, schedule, deanimateEdge]);
 
   const send = useCallback(() => {
-    if (phase.current !== "idle") return;
+    if (phase.current !== "idle") {
+      return;
+    }
     phase.current = "thinking";
 
     patchAgent({
@@ -219,19 +155,7 @@ export function useDemoFlow() {
         ],
       });
 
-      const queryNode: QueryFlowNode = {
-        id: QUERY_ID,
-        type: "query",
-        position: QUERY_POSITION,
-        data: { sql: "", status: "streaming", onRun },
-      };
-      const variableNode: VariableFlowNode = {
-        id: VARIABLE_ID,
-        type: "variable",
-        position: VARIABLE_POSITION,
-        data: { name: VARIABLE_NAME, value: VARIABLE_VALUE },
-      };
-      setNodes((current) => [...current, queryNode, variableNode]);
+      setNodes(current => [...current, createQueryNode(onRun), createVariableNode()]);
       setEdges([
         { ...floatingEdge("agent-query", AGENT_ID, QUERY_ID, QUERY_COLOR), animated: true },
         floatingEdge("variable-query", VARIABLE_ID, QUERY_ID, VARIABLE_COLOR),
@@ -254,7 +178,9 @@ export function useDemoFlow() {
   sendRef.current = send;
 
   const run = useCallback(() => {
-    if (phase.current !== "queryReady") return;
+    if (phase.current !== "queryReady") {
+      return;
+    }
     phase.current = "running";
     patchQuery({ status: "running" });
 
@@ -262,24 +188,8 @@ export function useDemoFlow() {
     schedule(700, () => {
       patchQuery({ status: "done" });
 
-      const resultNode: ResultFlowNode = {
-        id: RESULT_ID,
-        type: "result",
-        position: RESULT_POSITION,
-        data: {
-          title: RESULT_TITLE,
-          meta: RESULT_META,
-          total: RESULT_ROWS.length,
-          columns: RESULT_COLUMNS,
-          rows: [],
-          width: 380,
-          referenceColumn: "user_id",
-          onReference,
-          onChart,
-        },
-      };
-      setNodes((current) => [...current, resultNode]);
-      setEdges((current) => [
+      setNodes(current => [...current, createResultNode(onReference, onChart)]);
+      setEdges(current => [
         ...current,
         { ...floatingEdge("query-result", QUERY_ID, RESULT_ID, RESULT_COLOR), animated: true },
       ]);
@@ -303,45 +213,18 @@ export function useDemoFlow() {
   // a different id moves the reference subtree to that user.
   const reference = useCallback(
     (userId: string) => {
-      if (phase.current !== "resultReady" && phase.current !== "referenced") return;
+      if (phase.current !== "resultReady" && phase.current !== "referenced") {
+        return;
+      }
       phase.current = "referenced";
 
-      const settingsNode: ResultFlowNode = {
-        id: SETTINGS_ID,
-        type: "result",
-        position: USER_SETTINGS_POSITION,
-        data: {
-          title: "user_settings",
-          meta: "2 ms",
-          total: 1,
-          columns: USER_SETTINGS_COLUMNS,
-          rows: userSettingsRows(userId),
-          width: 360,
-        },
-      };
-      const adsNode: ResultFlowNode = {
-        id: ADS_ID,
-        type: "result",
-        position: JOB_ADS_POSITION,
-        data: {
-          title: "job_ads",
-          meta: "3 ms",
-          total: 3,
-          columns: JOB_ADS_COLUMNS,
-          rows: jobAdsRows(userId),
-          width: 440,
-        },
-      };
-
-      setNodes((current) => [
-        ...current.filter((node) => node.id !== SETTINGS_ID && node.id !== ADS_ID),
-        settingsNode,
-        adsNode,
+      setNodes(current => [
+        ...current.filter(node => node.id !== SETTINGS_ID && node.id !== ADS_ID),
+        createSettingsNode(userId),
+        createAdsNode(userId),
       ]);
-      setEdges((current) => [
-        ...current.filter(
-          (edge) => edge.id !== "result-settings" && edge.id !== "result-ads",
-        ),
+      setEdges(current => [
+        ...current.filter(edge => edge.id !== "result-settings" && edge.id !== "result-ads"),
         floatingEdge("result-settings", RESULT_ID, SETTINGS_ID, REFERENCE_COLOR),
         floatingEdge("result-ads", RESULT_ID, ADS_ID, REFERENCE_COLOR),
       ]);
@@ -362,28 +245,22 @@ export function useDemoFlow() {
 
   // Visualize the result's numeric column as a bar chart node.
   const chart = useCallback(() => {
-    if (phase.current !== "resultReady" && phase.current !== "referenced") return;
-    const valueColumn = RESULT_COLUMNS.find((column) => column.kind === "num");
-    if (!valueColumn) return;
+    if (phase.current !== "resultReady" && phase.current !== "referenced") {
+      return;
+    }
+    const valueColumn = RESULT_COLUMNS.find(column => column.kind === "num");
+    if (!valueColumn) {
+      return;
+    }
     const labelColumn = RESULT_COLUMNS[0];
-    const values = RESULT_ROWS.map((row) => Number(row[valueColumn.key]));
+    const values = RESULT_ROWS.map(row => Number(row[valueColumn.key]));
 
-    const chartNode: ChartFlowNode = {
-      id: CHART_ID,
-      type: "chart",
-      position: CHART_POSITION,
-      data: {
-        title: `${valueColumn.key} by ${labelColumn.key}`,
-        valueColumn: valueColumn.key,
-        values,
-      },
-    };
-    setNodes((current) => [
-      ...current.filter((node) => node.id !== CHART_ID),
-      chartNode,
+    setNodes(current => [
+      ...current.filter(node => node.id !== CHART_ID),
+      createChartNode(`${valueColumn.key} by ${labelColumn.key}`, valueColumn.key, values),
     ]);
-    setEdges((current) => [
-      ...current.filter((edge) => edge.id !== "result-chart"),
+    setEdges(current => [
+      ...current.filter(edge => edge.id !== "result-chart"),
       floatingEdge("result-chart", RESULT_ID, CHART_ID, CHART_COLOR),
     ]);
     schedule(140, () =>

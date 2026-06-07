@@ -9,7 +9,7 @@ export function OrbCanvas() {
   useOrbCanvas(canvasRef);
 
   return (
-    <div className={styles.wrap} aria-hidden="true">
+    <div className={styles.wrap} aria-hidden='true'>
       <div className={styles.fallback} />
       <canvas ref={canvasRef} className={styles.canvas} />
     </div>

@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "dependencies": {
     "@xyflow/react": "^12.11.0",
@@ -18,6 +22,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "oxfmt": "^0.49.0",
+    "oxlint": "^1.68.0",
     "typescript": "^5"
   }
 }

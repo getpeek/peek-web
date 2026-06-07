@@ -31,7 +31,7 @@ export function ChartNode({ data }: NodeProps<ChartFlowNode>) {
 
   return (
     <div className={styles.node}>
-      <Handle type="target" position={Position.Left} className={styles.handle} />
+      <Handle type='target' position={Position.Left} className={styles.handle} />
 
       <header className={styles.head}>
         <span className={styles.typeDot} />
@@ -45,12 +45,8 @@ export function ChartNode({ data }: NodeProps<ChartFlowNode>) {
           <span className={styles.capMeta}>top {values.length} · auto</span>
         </div>
 
-        <svg
-          className={styles.svg}
-          viewBox={`0 0 ${W} ${H}`}
-          preserveAspectRatio="none"
-        >
-          {TICKS.map((t) => {
+        <svg className={styles.svg} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio='none'>
+          {TICKS.map(t => {
             const y = PAD_T + (1 - t) * innerH;
             return (
               <g key={t}>
@@ -60,7 +56,7 @@ export function ChartNode({ data }: NodeProps<ChartFlowNode>) {
                   y1={y}
                   y2={y}
                   className={styles.axis}
-                  strokeDasharray="2 3"
+                  strokeDasharray='2 3'
                 />
                 <text x={2} y={y + 3} className={styles.tick}>
                   {Math.round(max * t)}
@@ -68,13 +64,7 @@ export function ChartNode({ data }: NodeProps<ChartFlowNode>) {
               </g>
             );
           })}
-          <line
-            x1={PAD_L}
-            x2={W - PAD_R}
-            y1={baseline}
-            y2={baseline}
-            className={styles.axis}
-          />
+          <line x1={PAD_L} x2={W - PAD_R} y1={baseline} y2={baseline} className={styles.axis} />
 
           {values.map((value, index) => {
             const barHeight = (value / max) * innerH;
@@ -95,7 +85,7 @@ export function ChartNode({ data }: NodeProps<ChartFlowNode>) {
         </svg>
       </div>
 
-      <Handle type="source" position={Position.Right} className={styles.handle} />
+      <Handle type='source' position={Position.Right} className={styles.handle} />
     </div>
   );
 }

@@ -16,7 +16,7 @@ export function VariableNode({ data }: NodeProps<VariableFlowNode>) {
 
   return (
     <div className={styles.node}>
-      <Handle type="target" position={Position.Left} className={styles.handle} />
+      <Handle type='target' position={Position.Left} className={styles.handle} />
 
       <header className={styles.head}>
         <span className={styles.typeDot} />
@@ -37,7 +37,7 @@ export function VariableNode({ data }: NodeProps<VariableFlowNode>) {
         </table>
       </div>
 
-      <Handle type="source" position={Position.Right} className={styles.handle} />
+      <Handle type='source' position={Position.Right} className={styles.handle} />
     </div>
   );
 }

@@ -70,8 +70,8 @@ function Flow() {
         variant={BackgroundVariant.Dots}
         gap={28}
         size={1}
-        color="rgba(255, 255, 255, 0.07)"
-        bgColor="transparent"
+        color='rgba(255, 255, 255, 0.07)'
+        bgColor='transparent'
       />
       <CanvasChrome onReset={reset} />
     </ReactFlow>
@@ -86,7 +86,7 @@ function CanvasChrome({ onReset }: { onReset: () => void }) {
 
   return (
     <>
-      <Panel position="top-right">
+      <Panel position='top-right'>
         <div className={styles.canvasTab}>
           <span className={styles.liveDot} />
           <span className={styles.conn}>analytics_db</span>
@@ -94,48 +94,48 @@ function CanvasChrome({ onReset }: { onReset: () => void }) {
         </div>
       </Panel>
 
-      <Panel position="top-left">
-        <button type="button" className={styles.resetBtn} onClick={onReset}>
+      <Panel position='top-left'>
+        <button type='button' className={styles.resetBtn} onClick={onReset}>
           <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
             strokeWidth={2.2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeLinecap='round'
+            strokeLinejoin='round'
           >
-            <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
-            <path d="M3 3v5h5" />
+            <path d='M3 12a9 9 0 1 0 3-6.7L3 8' />
+            <path d='M3 3v5h5' />
           </svg>
           Reset
         </button>
       </Panel>
 
-      <Panel position="bottom-left">
+      <Panel position='bottom-left'>
         <div className={styles.zoomCluster}>
-          <button type="button" onClick={() => zoomOut()} aria-label="Zoom out">
+          <button type='button' onClick={() => zoomOut()} aria-label='Zoom out'>
             −
           </button>
           <span className={styles.lvl}>{Math.round(zoom * 100)}%</span>
-          <button type="button" onClick={() => zoomIn()} aria-label="Zoom in">
+          <button type='button' onClick={() => zoomIn()} aria-label='Zoom in'>
             +
           </button>
-          <button type="button" onClick={recenter} aria-label="Fit view">
+          <button type='button' onClick={recenter} aria-label='Fit view'>
             <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
               strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeLinecap='round'
+              strokeLinejoin='round'
             >
-              <path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" />
+              <path d='M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4' />
             </svg>
           </button>
         </div>
       </Panel>
 
-      <Panel position="bottom-right">
+      <Panel position='bottom-right'>
         <div className={styles.panHint}>drag to pan · scroll to zoom</div>
       </Panel>
     </>

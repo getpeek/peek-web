@@ -27,7 +27,7 @@ export function AgentNode({ data }: NodeProps<AgentFlowNode>) {
 
   return (
     <div className={styles.node}>
-      <Handle type="target" position={Position.Left} className={styles.handle} />
+      <Handle type='target' position={Position.Left} className={styles.handle} />
 
       <header className={styles.head}>
         <span className={styles.typeDot} />
@@ -43,7 +43,7 @@ export function AgentNode({ data }: NodeProps<AgentFlowNode>) {
           </div>
         ) : (
           <>
-            {messages.map((message) => (
+            {messages.map(message => (
               <Message key={message.id} message={message} />
             ))}
             {thinking ? <Thinking /> : null}
@@ -57,29 +57,29 @@ export function AgentNode({ data }: NodeProps<AgentFlowNode>) {
           value={draft}
           readOnly
           rows={2}
-          placeholder="Ask anything about your data…"
+          placeholder='Ask anything about your data…'
         />
         <button
-          type="button"
-          className={styles.send}
+          type='button'
+          className={`${styles.send} pk-shimmer`}
           onClick={onSend}
           disabled={sent}
-          aria-label="Send message"
+          aria-label='Send message'
         >
           <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
             strokeWidth={2.4}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeLinecap='round'
+            strokeLinejoin='round'
           >
-            <path d="M5 12h14M13 5l7 7-7 7" />
+            <path d='M5 12h14M13 5l7 7-7 7' />
           </svg>
         </button>
       </div>
 
-      <Handle type="source" position={Position.Right} className={styles.handle} />
+      <Handle type='source' position={Position.Right} className={styles.handle} />
     </div>
   );
 }

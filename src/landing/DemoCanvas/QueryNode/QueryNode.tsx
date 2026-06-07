@@ -23,7 +23,7 @@ export function QueryNode({ data }: NodeProps<QueryFlowNode>) {
 
   return (
     <div className={styles.node}>
-      <Handle type="target" position={Position.Left} className={styles.handle} />
+      <Handle type='target' position={Position.Left} className={styles.handle} />
 
       <header className={styles.head}>
         <span className={styles.typeDot} />
@@ -53,37 +53,37 @@ export function QueryNode({ data }: NodeProps<QueryFlowNode>) {
 
         <div className={styles.foot}>
           <span className={styles.meta}>{QUERY_META}</span>
-          {status !== "streaming" ? (
+          {status === "streaming" ? null : (
             <button
-              type="button"
-              className={styles.run}
+              type='button'
+              className={`${styles.run} pk-shimmer`}
               onClick={onRun}
               disabled={status !== "ready"}
-              aria-label="Run query"
+              aria-label='Run query'
             >
               {status === "running" ? (
                 <svg
                   className={styles.spinner}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
                   strokeWidth={3}
-                  strokeLinecap="round"
+                  strokeLinecap='round'
                 >
-                  <circle cx="12" cy="12" r="9" strokeDasharray="40 20" />
+                  <circle cx='12' cy='12' r='9' strokeDasharray='40 20' />
                 </svg>
               ) : (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M5 3l14 9-14 9z" />
+                <svg viewBox='0 0 24 24' fill='currentColor'>
+                  <path d='M5 3l14 9-14 9z' />
                 </svg>
               )}
               {status === "running" ? "Running" : "Run"}
             </button>
-          ) : null}
+          )}
         </div>
       </div>
 
-      <Handle type="source" position={Position.Right} className={styles.handle} />
+      <Handle type='source' position={Position.Right} className={styles.handle} />
     </div>
   );
 }
