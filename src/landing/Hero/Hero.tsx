@@ -13,8 +13,8 @@ export function Hero() {
       </svg>
 
       <div className={styles.heroMeta}>
-        <div className={styles.left}>v2.5.3 · beta</div>
         <div className={styles.right}>Database GUI</div>
+        <div className={styles.left}>v2.5.3 · beta</div>
       </div>
 
       <div className={styles.wordmarkWrap}>

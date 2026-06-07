@@ -8,21 +8,13 @@ const MAX_DPR = 2;
 // (as uniforms) and the resting-blur math so they always agree.
 const ORB_CENTER_Y = 0.66;
 const ORB_RADIUS = 0.18;
+// How far (in orb radii) the cursor may stray before the blur eases back to its
+// resting spot instead of following the pointer.
+const ORB_REACH = 3.0;
 
-function cubicBezier(
-  t: number,
-  p0: number,
-  p1: number,
-  p2: number,
-  p3: number,
-) {
+function cubicBezier(t: number, p0: number, p1: number, p2: number, p3: number) {
   const mt = 1 - t;
-  return (
-    mt * mt * mt * p0 +
-    3 * mt * mt * t * p1 +
-    3 * mt * t * t * p2 +
-    t * t * t * p3
-  );
+  return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
 }
 
 function easeInOut(t: number) {
@@ -85,7 +77,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const rect = canvas.getBoundingClientRect();
       return {
         x: rect.width / 2,
-        y: (ORB_CENTER_Y - ORB_RADIUS / 3) * rect.height,
+        y: (ORB_CENTER_Y - ORB_RADIUS / 1.5) * rect.height,
       };
     };
     const setRest = () => {
@@ -108,7 +100,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       // just below the ball). y is bottom-up, so +y is up.
       return {
         x: cubicBezier(te, cx + r * 0.9, cx + r * 1.3, cx + r * 0.3, cx),
-        y: cubicBezier(te, cy + r * 0.9, cy + r * 0.4, cy - r * 0.6, cy - r / 3),
+        y: cubicBezier(te, cy + r * 0.9, cy + r * 0.4, cy - r * 0.6, cy - r / 1.5),
       };
     };
 
@@ -116,13 +108,18 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const yFromTop = event.clientY - rect.top;
-      const inside = x >= 0 && x <= rect.width && yFromTop >= 0 && yFromTop <= rect.height;
-      if (inside) {
-        introDone = true; // user interaction takes over from the intro
+      // distance from the orb centre (in px); the orb radius keys off the
+      // shorter canvas dimension, matching the shader's coord() aspect handling.
+      const orbX = rect.width / 2;
+      const orbYFromTop = (1 - ORB_CENTER_Y) * rect.height;
+      const orbR = ORB_RADIUS * Math.min(rect.width, rect.height);
+      const near = Math.hypot(x - orbX, yFromTop - orbYFromTop) <= orbR * ORB_REACH;
+      if (near) {
+        introDone = true; // genuine interaction takes over from the intro
         target.x = x;
         target.y = rect.height - yFromTop; // flip to bottom-up
       } else {
-        // not hovering the orb → ease back to the resting position
+        // cursor too far from the orb → ease back to the resting position
         const rest = restTarget();
         target.x = rest.x;
         target.y = rest.y;

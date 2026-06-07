@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./Nav.module.css";
 import Image from "next/image";
 
@@ -7,7 +8,9 @@ export function Nav() {
   return (
     <nav className={styles.nav}>
       <div className={styles.brand}>
-        <Image width={48} height={48} src="/logo.png" alt="Peek" />
+        <Link href="/">
+          <Image width={48} height={48} src="/logo.png" alt="Peek" />
+        </Link>
       </div>
       <div className={styles.links}>
         <a href="#features">Features</a>
