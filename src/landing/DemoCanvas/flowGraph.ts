@@ -48,7 +48,7 @@ export type DemoPhase =
   | "collabQuery"
   | "collabRunning"
   | "collabResult"
-  | "collabDone";
+  | "collab-finished";
 
 export const AGENT_ID = "agent";
 export const QUERY_ID = "query";

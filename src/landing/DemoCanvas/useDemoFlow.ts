@@ -220,9 +220,13 @@ export function useDemoFlow() {
   }, [streamRowsInto, deanimateEdge]);
 
   const send = useCallback(() => {
-    if (phase.current !== "idle") {
+    if (phase.current !== "idle" && phase.current !== "collab-finished") {
       return;
     }
+    // re-asking restarts the pipeline: clear Anna and everything the prior run built
+    setCollabJoined(false);
+    setCursor(null);
+    cursorPos.current = { ...CURSOR_START };
     phase.current = "thinking";
 
     patchAgent({
@@ -242,7 +246,12 @@ export function useDemoFlow() {
         ],
       });
 
-      setNodes(current => [...current, createQueryNode(onRun), createVariableNode()]);
+      // keep only the agent, then re-grow the query + variable beneath it
+      setNodes(current => [
+        ...current.filter(node => node.id === AGENT_ID),
+        createQueryNode(onRun),
+        createVariableNode(),
+      ]);
       setEdges([
         { ...floatingEdge("agent-query", AGENT_ID, QUERY_ID, QUERY_COLOR), animated: true },
         floatingEdge("variable-query", VARIABLE_ID, QUERY_ID, VARIABLE_COLOR),
@@ -260,12 +269,12 @@ export function useDemoFlow() {
       );
       schedule(360, streamSql);
     });
-  }, [patchAgent, schedule, setNodes, setEdges, fitView, streamSql, onRun]);
+  }, [patchAgent, schedule, setNodes, setEdges, fitView, streamSql, onRun, setCollabJoined, setCursor]);
 
   sendRef.current = send;
 
   const run = useCallback(() => {
-    if (phase.current !== "queryReady") {
+    if (phase.current !== "queryReady" && phase.current !== "collab-finished") {
       return;
     }
     phase.current = "running";
@@ -275,9 +284,13 @@ export function useDemoFlow() {
     schedule(700, () => {
       patchQueryById(QUERY_ID, { status: "done" });
 
-      setNodes(current => [...current, createResultNode(onReference, onChart)]);
+      // re-running replaces the prior result rather than stacking a duplicate id
+      setNodes(current => [
+        ...current.filter(node => node.id !== RESULT_ID),
+        createResultNode(onReference, onChart),
+      ]);
       setEdges(current => [
-        ...current,
+        ...current.filter(edge => edge.id !== "query-result"),
         { ...floatingEdge("query-result", QUERY_ID, RESULT_ID, RESULT_COLOR), animated: true },
       ]);
       phase.current = "resultStreaming";
@@ -303,7 +316,7 @@ export function useDemoFlow() {
       if (
         phase.current !== "resultReady" &&
         phase.current !== "referenced" &&
-        phase.current !== "collabDone"
+        phase.current !== "collab-finished"
       ) {
         return;
       }
@@ -362,10 +375,13 @@ export function useDemoFlow() {
     schedule(380, () =>
       streamRowsInto(COLLAB_RESULT_ID, COLLAB_RESULT_ROWS, () => {
         deanimateEdge("collab-query-result");
-        phase.current = "collabDone";
+        phase.current = "collab-finished";
+        // hand the canvas back to the visitor — re-arm the agent + query actions
+        patchAgent({ sent: false });
+        patchQueryById(QUERY_ID, { status: "ready" });
       }),
     );
-  }, [patchQueryById, setNodes, setEdges, schedule, fitView, glideCursor, streamRowsInto, deanimateEdge]);
+  }, [patchAgent, patchQueryById, setNodes, setEdges, schedule, fitView, glideCursor, streamRowsInto, deanimateEdge]);
 
   const collabRun = useCallback(() => {
     if (phase.current !== "collabQuery") {
@@ -436,7 +452,11 @@ export function useDemoFlow() {
   // Visualize the result's numeric column as a bar chart node. The multiplayer
   // finale is now user-initiated via the titlebar Share button (startCollab).
   const chart = useCallback(() => {
-    if (phase.current !== "resultReady" && phase.current !== "referenced") {
+    if (
+      phase.current !== "resultReady" &&
+      phase.current !== "referenced" &&
+      phase.current !== "collab-finished"
+    ) {
       return;
     }
     const valueColumn = RESULT_COLUMNS.find(column => column.kind === "num");
