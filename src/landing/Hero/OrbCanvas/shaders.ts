@@ -62,12 +62,12 @@ void main() {
 
   // var=1 lens: a soft disc around the cursor whose value sets how soft the
   // WHOLE planet is — so the gradient itself blurs/reveals, not just the edge.
-  float lens = fill(sdCircle(st, posMouse), 0.3, 0.5);
+  float lens = fill(sdCircle(st, posMouse), 0.18, 0.25);
 
   // Filled planet: edge crisp by default (just sub-pixel AA via fwidth), blooming
   // into a soft gradient cloud where the lens sits — exactly like demo var=1.
   float sd = sdCircle(st, u_center);
-  float edge = max(lens * 1.4, fwidth(sd));
+  float edge = max(lens * 1.0, fwidth(sd));
   float mask = fill(sd, u_radius * 2.0, edge);
 
   // Linear gradient on the -143° axis: blue (bottom-left) -> mauve -> yellow

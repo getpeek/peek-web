@@ -7,7 +7,27 @@ const MAX_DPR = 2;
 // 0.66 sits in the upper area, behind the "Peek" wordmark. Shared with the shader
 // (as uniforms) and the resting-blur math so they always agree.
 const ORB_CENTER_Y = 0.66;
-const ORB_RADIUS = 0.14;
+const ORB_RADIUS = 0.18;
+
+function cubicBezier(
+  t: number,
+  p0: number,
+  p1: number,
+  p2: number,
+  p3: number,
+) {
+  const mt = 1 - t;
+  return (
+    mt * mt * mt * p0 +
+    3 * mt * mt * t * p1 +
+    3 * mt * t * t * p2 +
+    t * t * t * p3
+  );
+}
+
+function easeInOut(t: number) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
 
 export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
@@ -73,12 +93,32 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       target.x = current.x = rest.x;
       target.y = current.y = rest.y;
     };
+
+    // Intro: the blur enters at the orb's top-right and arcs (a cubic Bézier)
+    // down to its resting spot just below the ball, once on load.
+    const INTRO_MS = 1500;
+    let introStart = 0;
+    let introDone = false;
+    const introPos = (te: number) => {
+      const rect = canvas.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = ORB_CENTER_Y * rect.height;
+      const r = ORB_RADIUS * rect.height;
+      // P0 top-right → sweep down the right side (arch) → P3 rest (centre,
+      // just below the ball). y is bottom-up, so +y is up.
+      return {
+        x: cubicBezier(te, cx + r * 0.9, cx + r * 1.3, cx + r * 0.3, cx),
+        y: cubicBezier(te, cy + r * 0.9, cy + r * 0.4, cy - r * 0.6, cy - r / 3),
+      };
+    };
+
     const onPointerMove = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const yFromTop = event.clientY - rect.top;
       const inside = x >= 0 && x <= rect.width && yFromTop >= 0 && yFromTop <= rect.height;
       if (inside) {
+        introDone = true; // user interaction takes over from the intro
         target.x = x;
         target.y = rect.height - yFromTop; // flip to bottom-up
       } else {
@@ -104,11 +144,20 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const tick = (now: number) => {
       const dt = last ? (now - last) / 1000 : 0;
       last = now;
-      // pointer-driven only (no autonomous motion); under reduced motion we
-      // snap to the cursor instead of easing toward it.
-      const k = reduceMotion ? 1 : 1 - Math.exp(-DAMP_LAMBDA * dt);
-      current.x += (target.x - current.x) * k;
-      current.y += (target.y - current.y) * k;
+      if (!introDone) {
+        // play the intro arc, easing along the Bézier toward the rest spot
+        if (!introStart) introStart = now;
+        const t = Math.min((now - introStart) / INTRO_MS, 1);
+        const pos = introPos(easeInOut(t));
+        current.x = pos.x;
+        current.y = pos.y;
+        if (t >= 1) introDone = true;
+      } else {
+        // pointer-driven only (no autonomous motion); reduced motion snaps.
+        const k = reduceMotion ? 1 : 1 - Math.exp(-DAMP_LAMBDA * dt);
+        current.x += (target.x - current.x) * k;
+        current.y += (target.y - current.y) * k;
+      }
       renderFrame();
       raf = requestAnimationFrame(tick);
     };
@@ -124,7 +173,14 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
 
     resize();
     setRest();
-    renderFrame(); // paint immediately so the ring shows before the loop starts
+    if (reduceMotion) {
+      introDone = true; // honour reduced motion: skip the intro animation
+    } else {
+      const begin = introPos(0);
+      current.x = begin.x;
+      current.y = begin.y;
+    }
+    renderFrame(); // paint the starting frame before the loop runs
 
     const resizeObserver = new ResizeObserver(() => {
       resize();
