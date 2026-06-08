@@ -1,0 +1,56 @@
+.section {
+  position: relative;
+  padding: 120px 0;
+
+  @media (min-width: 768px) {
+    padding: 200px 0;
+  }
+
+  .feature {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    @media (min-width: 768px) {
+      gap: 48px;
+    }
+
+    .heading {
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: row;
+      gap: 32px;
+      justify-content: space-between;
+      align-items: center;
+
+      .sub {
+        font-family: var(--pk-font-mono);
+        font-size: 13px;
+        color: var(--pk-ink-2);
+        line-height: 1.6;
+        max-width: 320px;
+        margin: 0;
+
+        & strong {
+          color: var(--pk-ink);
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  /* headings only for now — demos land beside each one later */
+  gap: 96px;
+
+  @media (min-width: 768px) {
+    padding: 0 80px;
+    gap: 160px;
+  }
+}

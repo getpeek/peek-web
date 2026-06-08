@@ -21,6 +21,7 @@ import { Toolbar } from "./Toolbar/Toolbar";
 import { FloatingEdge } from "./FloatingEdge";
 import { useDemoFlow } from "./useDemoFlow";
 import { ANNA } from "./data";
+import { SectionHeading } from "../SectionHeading/SectionHeading";
 import styles from "./DemoCanvas.module.css";
 
 const nodeTypes = {
@@ -37,6 +38,15 @@ const FIT_VIEW_OPTIONS = { padding: 0.4, maxZoom: 1 };
 export function DemoCanvas() {
   return (
     <section className={styles.section}>
+      <div className={styles.lead}>
+        <SectionHeading eyebrow='Live demo · the canvas' accent='yellow'>
+          Try it yourself.
+        </SectionHeading>
+        <p className={styles.sub}>
+          The best way of understanding what <strong>Peek</strong> is, is by testing it. Below is a
+          demo of the fundemental flow.
+        </p>
+      </div>
       <div className={styles.stage}>
         <ReactFlowProvider>
           <Flow />
@@ -112,11 +122,7 @@ function CanvasChrome({
             </span>
           ) : (
             <span className={styles.shareWrap}>
-              <button
-                type='button'
-                className={`${styles.shareBtn} pk-shimmer`}
-                onClick={onShare}
-              >
+              <button type='button' className={`${styles.shareBtn} pk-shimmer`} onClick={onShare}>
                 <svg
                   viewBox='0 0 24 24'
                   fill='none'

@@ -1,12 +1,11 @@
 .hero {
   position: relative;
-  min-height: 100vh;
   text-align: center;
   margin: 56px 0 120px;
   overflow: hidden;
-
+  margin: 40px 0 80px;
   @media (min-width: 768px) {
-    margin: 90px 0 200px;
+    margin: 40px 0 120px;
   }
 }
 

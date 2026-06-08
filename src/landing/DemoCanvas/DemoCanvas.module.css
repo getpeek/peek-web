@@ -9,6 +9,37 @@
   }
 }
 
+.lead {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1280px;
+  margin: 0 auto 40px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 60px;
+    padding: 0 80px;
+    margin-bottom: 56px;
+  }
+}
+
+.sub {
+  font-family: var(--pk-font-mono);
+  font-size: 13px;
+  color: var(--pk-ink-2);
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0;
+
+  & strong {
+    color: var(--pk-ink);
+    font-weight: 500;
+  }
+}
+
 .stage {
   position: relative;
   width: 100%;

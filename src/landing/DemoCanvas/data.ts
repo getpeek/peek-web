@@ -2,7 +2,7 @@
 // these constants feed the Agent (chat), Query (SQL) and Result nodes.
 
 export const AGENT_PROMPT =
-  "find the top 10 users ranked by how many jobs ads they are the recruiter for";
+  "find the top 10 users ranked by how many jobs ads they are assigned to.";
 
 export const AGENT_MODEL = "Qwen/Qwen3.6-35B-A3B";
 

@@ -1,0 +1,58 @@
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--pk-font-mono);
+  font-size: 11px;
+  color: var(--pk-ink-mute);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.heading {
+  font-family: var(--pk-font-section);
+  font-weight: 900;
+  /* design is a flat 56px (desktop); shrink fluidly on small screens */
+  font-size: clamp(34px, 7vw, 56px);
+  letter-spacing: -0.018em;
+  line-height: 1;
+  color: var(--pk-ink);
+  margin: 18px 0 0;
+  max-width: 720px;
+
+  & em {
+    font-family: var(--pk-font-display);
+    font-style: italic;
+    font-weight: 900;
+    /* color comes from the accent variant; un-accented <em> stays white */
+  }
+}
+
+/* oversized, tighter scale for the closing CTA */
+.root[data-size="display"] .heading {
+  font-size: clamp(48px, 10vw, 88px);
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+}
+
+.root[data-align="center"] {
+  text-align: center;
+
+  & .heading {
+    margin-inline: auto;
+  }
+}
+
+/* accent colors the heading's <em> */
+.root[data-accent="blue"] .heading em {
+  color: var(--pk-blue);
+}
+.root[data-accent="yellow"] .heading em {
+  color: var(--pk-yellow);
+}
+.root[data-accent="mauve"] .heading em {
+  color: var(--pk-mauve);
+}
+.root[data-accent="olive"] .heading em {
+  color: var(--pk-olive-2);
+}
