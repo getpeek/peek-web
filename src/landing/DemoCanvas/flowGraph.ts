@@ -68,17 +68,19 @@ export const VARIABLE_COLOR = "rgb(180, 129, 147)";
 
 const AGENT_POSITION = { x: 56, y: 110 };
 const QUERY_POSITION = { x: 540, y: 96 };
-const RESULT_POSITION = { x: 1020, y: 70 };
+const RESULT_POSITION = { x: 1020, y: -20 };
 const USER_SETTINGS_POSITION = { x: 820, y: 560 };
 const JOB_ADS_POSITION = { x: 1300, y: 560 };
 const CHART_POSITION = { x: 1500, y: 90 };
 const VARIABLE_POSITION = { x: 600, y: -150 };
 // top-left of the query Anna drags out (the create-drag origin; the cursor
-// glides here, the node spawns here and grows from this corner)
-export const COLLAB_QUERY_POSITION = { x: 1180, y: 620 };
-const COLLAB_RESULT_POSITION = { x: 1720, y: 600 };
+// glides here, the node spawns here and grows from this corner). Sits in the
+// empty band below the follow-reference nodes (y ≈ 560–780) so the multiplayer
+// cluster never overlaps them.
+export const COLLAB_QUERY_POSITION = { x: 1180, y: 920 };
+const COLLAB_RESULT_POSITION = { x: 1720, y: 900 };
 // off the right edge: Anna's cursor flies in from here
-export const CURSOR_START = { x: 2320, y: 760 };
+export const CURSOR_START = { x: 2320, y: 1060 };
 
 export function floatingEdge(id: string, source: string, target: string, color: string): Edge {
   return {
@@ -222,4 +224,3 @@ export function createCollabResultNode(): ResultFlowNode {
     },
   };
 }
-

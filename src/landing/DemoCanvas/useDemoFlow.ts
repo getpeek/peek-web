@@ -52,9 +52,24 @@ type Point = { x: number; y: number };
 
 // the collab finale's choreography points (flow coords)
 const CREATE_SCALE_START = 0.18;
-const DRAG_SIZE = { w: 410, h: 150 }; // ~query-node size the cursor drags out
-const RUN_POINT: Point = { x: 1530, y: 730 };
-const RESULT_PARK_POINT: Point = { x: 2000, y: 710 };
+const DRAG_SIZE = { w: 410, h: 150 };
+const RUN_POINT: Point = { x: 1530, y: 1030 };
+const RESULT_PARK_POINT: Point = { x: 2000, y: 1010 };
+
+// Streaming nodes grow downward after they spawn, so they're framed once they
+// reach full height (see streamSql/streamRows) — symmetric padding then centers
+// the created node, which keeps its footer clear of the bottom toolbar.
+const CREATED_NODE_PADDING = 0.32;
+
+// Anna's multiplayer finale drives the canvas autonomously; the visitor's own
+// node actions (run / follow-reference / chart) are locked only while it plays.
+// Every other phase leaves the nodes fully interactive.
+const COLLAB_ANIMATION_PHASES: DemoPhase[] = [
+  "collabJoining",
+  "collabQuery",
+  "collabRunning",
+  "collabResult",
+];
 
 export function useDemoFlow() {
   const { fitView, setCenter } = useReactFlow();
@@ -144,7 +159,11 @@ export function useDemoFlow() {
   // transition smooths between steps. `onStep` receives eased progress (0..1)
   // so callers can drive synced effects (e.g. the node growing under the drag).
   const glideCursor = useCallback(
-    (to: Point, duration: number, opts?: { onStep?: (progress: number) => void; onDone?: () => void }) => {
+    (
+      to: Point,
+      duration: number,
+      opts?: { onStep?: (progress: number) => void; onDone?: () => void },
+    ) => {
       const from = { ...cursorPos.current };
       const steps = Math.max(1, Math.round(duration / 24));
       let step = 0;
@@ -209,15 +228,36 @@ export function useDemoFlow() {
       patchQueryById(QUERY_ID, { status: "ready" });
       deanimateEdge("agent-query");
       phase.current = "queryReady";
+      // the node grew taller as the SQL streamed in (and only now shows its Run
+      // button); the streaming-time fit framed the empty node, so reframe the
+      // full-height node to lift its footer clear of the bottom toolbar
+      schedule(80, () =>
+        fitView({
+          nodes: [{ id: QUERY_ID }, { id: VARIABLE_ID }],
+          duration: 600,
+          padding: CREATED_NODE_PADDING,
+          maxZoom: 1,
+        }),
+      );
     });
-  }, [streamSqlInto, patchQueryById, deanimateEdge]);
+  }, [streamSqlInto, patchQueryById, deanimateEdge, schedule, fitView]);
 
   const streamRows = useCallback(() => {
     streamRowsInto(RESULT_ID, RESULT_ROWS, () => {
       deanimateEdge("query-result");
       phase.current = "resultReady";
+      // rows streamed in and grew the node past the streaming-time frame;
+      // reframe the full-height result so it sits centered, clear of the toolbar
+      schedule(80, () =>
+        fitView({
+          nodes: [{ id: RESULT_ID }],
+          duration: 600,
+          padding: CREATED_NODE_PADDING,
+          maxZoom: 1,
+        }),
+      );
     });
-  }, [streamRowsInto, deanimateEdge]);
+  }, [streamRowsInto, deanimateEdge, schedule, fitView]);
 
   const send = useCallback(() => {
     if (phase.current !== "idle" && phase.current !== "collab-finished") {
@@ -263,18 +303,28 @@ export function useDemoFlow() {
         fitView({
           nodes: [{ id: QUERY_ID }, { id: VARIABLE_ID }],
           duration: 800,
-          padding: 0.32,
+          padding: CREATED_NODE_PADDING,
           maxZoom: 1,
         }),
       );
       schedule(360, streamSql);
     });
-  }, [patchAgent, schedule, setNodes, setEdges, fitView, streamSql, onRun, setCollabJoined, setCursor]);
+  }, [
+    patchAgent,
+    schedule,
+    setNodes,
+    setEdges,
+    fitView,
+    streamSql,
+    onRun,
+    setCollabJoined,
+    setCursor,
+  ]);
 
   sendRef.current = send;
 
   const run = useCallback(() => {
-    if (phase.current !== "queryReady" && phase.current !== "collab-finished") {
+    if (COLLAB_ANIMATION_PHASES.includes(phase.current)) {
       return;
     }
     phase.current = "running";
@@ -299,7 +349,7 @@ export function useDemoFlow() {
         fitView({
           nodes: [{ id: RESULT_ID }],
           duration: 800,
-          padding: 0.3,
+          padding: CREATED_NODE_PADDING,
           maxZoom: 1,
         }),
       );
@@ -313,11 +363,7 @@ export function useDemoFlow() {
   // a different id moves the reference subtree to that user.
   const reference = useCallback(
     (userId: string) => {
-      if (
-        phase.current !== "resultReady" &&
-        phase.current !== "referenced" &&
-        phase.current !== "collab-finished"
-      ) {
+      if (COLLAB_ANIMATION_PHASES.includes(phase.current)) {
         return;
       }
       phase.current = "referenced";
@@ -381,7 +427,17 @@ export function useDemoFlow() {
         patchQueryById(QUERY_ID, { status: "ready" });
       }),
     );
-  }, [patchAgent, patchQueryById, setNodes, setEdges, schedule, fitView, glideCursor, streamRowsInto, deanimateEdge]);
+  }, [
+    patchAgent,
+    patchQueryById,
+    setNodes,
+    setEdges,
+    schedule,
+    fitView,
+    glideCursor,
+    streamRowsInto,
+    deanimateEdge,
+  ]);
 
   const collabRun = useCallback(() => {
     if (phase.current !== "collabQuery") {
@@ -432,7 +488,17 @@ export function useDemoFlow() {
         );
       },
     });
-  }, [pressCursor, setNodes, onCollabRun, glideCursor, patchQueryById, schedule, fitView, streamSqlInto, collabRun]);
+  }, [
+    pressCursor,
+    setNodes,
+    onCollabRun,
+    glideCursor,
+    patchQueryById,
+    schedule,
+    fitView,
+    streamSqlInto,
+    collabRun,
+  ]);
 
   const startCollab = useCallback(() => {
     if (phase.current.startsWith("collab")) {
@@ -445,18 +511,14 @@ export function useDemoFlow() {
     cursorPos.current = { ...CURSOR_START };
     setCursor({ x: CURSOR_START.x, y: CURSOR_START.y, pressed: false });
     schedule(60, () => glideCursor(COLLAB_QUERY_POSITION, 950));
-    schedule(80, () => setCenter(1420, 720, { zoom: 0.8, duration: 950 }));
+    schedule(80, () => setCenter(1420, 1020, { zoom: 0.8, duration: 950 }));
     schedule(1150, collabCreateQuery);
   }, [schedule, glideCursor, setCenter, collabCreateQuery]);
 
   // Visualize the result's numeric column as a bar chart node. The multiplayer
   // finale is now user-initiated via the titlebar Share button (startCollab).
   const chart = useCallback(() => {
-    if (
-      phase.current !== "resultReady" &&
-      phase.current !== "referenced" &&
-      phase.current !== "collab-finished"
-    ) {
+    if (COLLAB_ANIMATION_PHASES.includes(phase.current)) {
       return;
     }
     const valueColumn = RESULT_COLUMNS.find(column => column.kind === "num");

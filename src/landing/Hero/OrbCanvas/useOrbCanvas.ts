@@ -20,8 +20,13 @@ const DESIGN_TOP_FRACTION = 1 - ORB_CENTER_Y;
 const ANCHOR_SELECTOR = "[data-orb-anchor]";
 const ORB_BELOW_ANCHOR = 0.7;
 // Extra push-down (CSS px) below the radius-based offset, so the wordmark stays
-// readable above the planet.
-const ORB_OFFSET_PX = 80;
+// readable above the planet. Mobile-first: the radius keys off the narrow
+// viewport width, so the same push-down that reads well on desktop drops the
+// (smaller) orb clear of the heading on phones — a lighter offset there keeps
+// "Peek" peeking out from behind the planet. Mirrors the CSS 768px breakpoint.
+const ORB_OFFSET_PX = 48;
+const ORB_OFFSET_PX_DESKTOP = 80;
+const DESKTOP_QUERY = "(min-width: 768px)";
 
 export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
@@ -89,12 +94,15 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       }
       const canvasRect = canvas.getBoundingClientRect();
       const anchorRect = anchor.getBoundingClientRect();
+      const orbOffsetPx = window.matchMedia(DESKTOP_QUERY).matches
+        ? ORB_OFFSET_PX_DESKTOP
+        : ORB_OFFSET_PX;
       orbCenterFromTop =
         anchorRect.top -
         canvasRect.top +
         anchorRect.height / 2 +
         ORB_BELOW_ANCHOR * orbRadiusPx +
-        ORB_OFFSET_PX;
+        orbOffsetPx;
     };
 
     const resize = () => {

@@ -39,12 +39,13 @@ export function DemoCanvas() {
   return (
     <section className={styles.section}>
       <div className={styles.lead}>
-        <SectionHeading eyebrow='Live demo · the canvas' accent='yellow'>
+        <SectionHeading eyebrow='The canvas' accent='yellow'>
           Try it yourself.
         </SectionHeading>
         <p className={styles.sub}>
-          The best way of understanding what <strong>Peek</strong> is, is by testing it. Below is a
-          demo of the fundemental flow.
+          The best way of understanding Peek is by testing it.{" "}
+          <strong>Try clicking the send message button</strong> below, or{" "}
+          <strong>share the session</strong> with someone.
         </p>
       </div>
       <div className={styles.stage}>
