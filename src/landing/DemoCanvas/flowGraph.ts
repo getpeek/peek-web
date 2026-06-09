@@ -50,6 +50,16 @@ export type DemoPhase =
   | "collabResult"
   | "collab-finished";
 
+// Anna's multiplayer finale drives the canvas autonomously; the visitor's own
+// node actions (run / follow-reference / chart) are locked only while it plays.
+// Every other phase leaves the nodes fully interactive.
+export const COLLAB_ANIMATION_PHASES: DemoPhase[] = [
+  "collabJoining",
+  "collabQuery",
+  "collabRunning",
+  "collabResult",
+];
+
 export const AGENT_ID = "agent";
 export const QUERY_ID = "query";
 export const RESULT_ID = "result";

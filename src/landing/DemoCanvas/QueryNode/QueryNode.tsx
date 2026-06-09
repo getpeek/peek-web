@@ -29,7 +29,9 @@ export function QueryNode({ data }: NodeProps<QueryFlowNode>) {
   return (
     <div
       className={`${styles.node} ${creating ? styles.creating : ""}`}
-      style={creating ? { transform: `scale(${createScale})`, transformOrigin: "top left" } : undefined}
+      style={
+        creating ? { transform: `scale(${createScale})`, transformOrigin: "top left" } : undefined
+      }
     >
       <Handle type='target' position={Position.Left} className={styles.handle} />
 

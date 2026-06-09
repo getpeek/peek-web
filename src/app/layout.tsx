@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 import { JetBrains_Mono, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 

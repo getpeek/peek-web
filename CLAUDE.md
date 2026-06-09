@@ -163,3 +163,7 @@ small screens as the default, not an afterthought.
 - Don't write speculative abstractions or options no caller passes. Three similar
   lines beat a premature helper.
 - Don't reach for a default export outside the Next.js special files listed above.
+
+# Verification
+
+After you have completed work run `npm run fmt` followed by `npm run lint:fix -- --fix-dangerously`
