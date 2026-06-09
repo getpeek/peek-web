@@ -18,26 +18,31 @@ export function FeatureVideo({ src, poster, label = "Play demo video" }: Feature
     setPlaying(true);
   };
 
+  if (!src) {
+    return (
+      <div className={styles.frame}>
+        <span className={styles.comingSoon}>Demo coming soon</span>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.frame}>
-      {src && (
-        <video
-          ref={videoRef}
-          className={styles.video}
-          src={src}
-          poster={poster}
-          playsInline
-          preload='metadata'
-          controls={playing}
-          onEnded={() => setPlaying(false)}
-        />
-      )}
+      <video
+        ref={videoRef}
+        className={styles.video}
+        src={src}
+        poster={poster}
+        playsInline
+        preload='metadata'
+        controls={playing}
+        onEnded={() => setPlaying(false)}
+      />
       {!playing && (
         <button
           type='button'
           className={`${styles.playButton} pk-shimmer`}
           onClick={play}
-          disabled={!src}
           aria-label={label}
         >
           <svg viewBox='0 0 24 24' width='22' height='22' aria-hidden='true'>

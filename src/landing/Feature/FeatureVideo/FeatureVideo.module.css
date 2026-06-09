@@ -48,8 +48,15 @@
     border-color: var(--pk-hairline-2);
     transform: translate(-50%, -50%) scale(1.06);
   }
+}
 
-  &:disabled {
-    cursor: default;
-  }
+.comingSoon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pk-ink-faint);
 }

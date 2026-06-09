@@ -191,10 +191,6 @@ function CanvasChrome({
         </div>
       </Panel>
 
-      <Panel position='bottom-right'>
-        <div className={styles.panHint}>drag to pan · scroll to zoom</div>
-      </Panel>
-
       <Toolbar />
     </>
   );

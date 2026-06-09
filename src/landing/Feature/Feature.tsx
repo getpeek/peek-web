@@ -18,7 +18,7 @@ export function Feature() {
               drop in performance.
             </p>
           </div>
-          <FeatureVideo label='Play the performance demo' />
+          <FeatureVideo src='/casts/fps.webm' label='Play the performance demo' />
         </div>
 
         <div className={styles.feature}>
@@ -32,7 +32,7 @@ export function Feature() {
               don't have to worry about rate limits.
             </p>
           </div>
-          <FeatureVideo label='Play the local AI demo' />
+          <FeatureVideo src='/casts/agent.webm' label='Play the local AI demo' />
         </div>
 
         <div className={styles.feature}>
@@ -46,7 +46,7 @@ export function Feature() {
               camera.
             </p>
           </div>
-          <FeatureVideo label='Play the agentic MCP demo' />
+          <FeatureVideo src='/casts/mcp.webm' label='Play the agentic MCP demo' />
         </div>
 
         <div className={styles.feature}>
@@ -75,7 +75,7 @@ export function Feature() {
               against other tables.
             </p>
           </div>
-          <FeatureVideo label='Play the file import demo' />
+          <FeatureVideo src='/casts/bring-your-own-data.webm' label='Play the file import demo' />
         </div>
 
         <div className={styles.feature}>
@@ -88,21 +88,7 @@ export function Feature() {
               and knows when to present a dropdown or a JSON editor
             </p>
           </div>
-          <FeatureVideo label='Play the inline editing demo' />
-        </div>
-
-        <div className={styles.feature}>
-          <div className={styles.heading}>
-            <SectionHeading accent='yellow'>
-              If it&apos;s chartable, <em>it&apos;s a chart.</em>
-            </SectionHeading>
-            <p className={styles.sub}>
-              If you query numerical data, Peek will let you chart it.{" "}
-              <strong>Bar charts, Line charts, Area charts. Multi column.</strong> No need to jump
-              out to excel just to visualize it.
-            </p>
-          </div>
-          <FeatureVideo label='Play the charting demo' />
+          <FeatureVideo src='/casts/edit.webm' label='Play the inline editing demo' />
         </div>
       </div>
     </section>

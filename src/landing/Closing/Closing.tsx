@@ -5,8 +5,13 @@ export function Closing() {
   return (
     <section className={styles.section}>
       <div className={styles.container}>
-        <SectionHeading eyebrow='— ready to peek —' accent='yellow' align='center' size='display'>
-          Take a look <em>around.</em>
+        <SectionHeading
+          eyebrow="Please i've spent so much time on this "
+          accent='yellow'
+          align='center'
+          size='display'
+        >
+          Have a <em>Peek </em> around.
         </SectionHeading>
       </div>
     </section>

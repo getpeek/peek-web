@@ -133,7 +133,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const rect = canvas.getBoundingClientRect();
       return {
         x: rect.width / 2,
-        y: rect.height - orbCenterFromTop - orbRadiusPx / 1.5,
+        y: rect.height - orbCenterFromTop - orbRadiusPx / 2.8,
       };
     };
     const setRest = () => {
@@ -157,7 +157,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       // just below the ball). y is bottom-up, so +y is up.
       return {
         x: cubicBezier(te, cx + r * 0.9, cx + r * 1.3, cx + r * 0.3, cx),
-        y: cubicBezier(te, cy + r * 0.9, cy + r * 0.4, cy - r * 0.6, cy - r / 1.5),
+        y: cubicBezier(te, cy + r * 0.9, cy + r * 0.4, cy - r * 0.6, cy - r / 2.8),
       };
     };
 
