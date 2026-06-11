@@ -1,7 +1,9 @@
+import { getLatestRelease } from "@/release/latestRelease";
 import styles from "./Hero.module.css";
 import { OrbCanvas } from "./OrbCanvas/OrbCanvas";
 
-export function Hero() {
+export async function Hero() {
+  const release = await getLatestRelease();
   return (
     <section className={styles.hero}>
       <OrbCanvas />
@@ -14,7 +16,7 @@ export function Hero() {
 
       <div className={styles.heroMeta}>
         <div className={styles.right}>Database GUI</div>
-        <div className={styles.left}>v2.5.3 · beta</div>
+        <div className={styles.left}>v{release.version} · beta</div>
       </div>
 
       <div className={styles.wordmarkWrap}>
@@ -29,7 +31,7 @@ export function Hero() {
       </p>
 
       <div className={styles.heroCta}>
-        <a className={styles.cta} href='#beta'>
+        <a className={styles.cta} href={release.downloadUrl}>
           <span>Get the Beta</span>
           <svg
             viewBox='0 0 24 24'

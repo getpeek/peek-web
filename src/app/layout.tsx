@@ -12,7 +12,7 @@ const jetBrainsMono = JetBrains_Mono({
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "900"],
+  weight: ["500", "600", "700", "800", "900"],
 });
 
 // Inter stands in for the paid "Söhne" used in the source design — its variable

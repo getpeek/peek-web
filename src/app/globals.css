@@ -25,6 +25,10 @@
   --pk-hairline-2: rgba(255, 255, 255, 0.12);
   --pk-card: rgba(20, 21, 40, 0.55);
 
+  /* Height of the sticky nav once scrolled/compressed (48px logo + 12px padding
+     each side); sticky offsets elsewhere (docs sidebar) must clear it. */
+  --pk-nav-height: 72px;
+
   /* Canvas / demo nodes (the real Peek app exposes these as --pk-type-* / node chrome) */
   --pk-type-agent: var(--pk-blue);
   --pk-type-query: rgb(186, 140, 240);
@@ -53,6 +57,16 @@ html,
 body {
   margin: 0;
   padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* keep anchor targets clear of the sticky nav */
+  scroll-padding-top: 120px;
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
 }
 
 body {

@@ -1,12 +1,48 @@
 .nav {
   position: relative;
   z-index: 10;
+
+  /* Docs-style chrome: pinned bar, transparent and padded like the landing nav
+     until the page scrolls, then it compresses to --pk-nav-height and gains
+     blur + hairline so it reads over passing content. */
+  &.sticky {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    transition:
+      background-color 0.25s ease,
+      box-shadow 0.25s ease;
+
+    & .inner {
+      transition: padding 0.25s ease;
+    }
+
+    &.scrolled {
+      background: rgba(5, 5, 17, 0.72);
+      backdrop-filter: blur(18px);
+      /* hairline as a shadow, not a border, so toggling it never shifts layout */
+      box-shadow: 0 1px 0 var(--pk-hairline);
+
+      & .inner {
+        padding-block: 12px;
+      }
+    }
+  }
+}
+
+.inner {
   display: flex;
   align-items: center;
   gap: 20px;
   padding: 20px;
   max-width: 1600px;
   margin: 0 auto;
+
+  @media (min-width: 768px) {
+    justify-content: space-between;
+    gap: 36px;
+    padding: 32px 80px;
+  }
 }
 
 .brand {
@@ -31,6 +67,11 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 
+  @media (min-width: 768px) {
+    gap: 36px;
+    overflow-x: visible;
+  }
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -39,7 +80,8 @@
     flex-shrink: 0;
   }
 
-  & a:hover {
+  & a:hover,
+  & a.current {
     color: var(--pk-ink);
   }
 }
@@ -55,25 +97,12 @@
   background: rgba(255, 255, 255, 0.02);
   transition: all 0.2s ease;
 
+  @media (min-width: 768px) {
+    display: inline-block;
+  }
+
   &:hover {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.2);
-  }
-}
-
-@media (min-width: 768px) {
-  .nav {
-    justify-content: space-between;
-    gap: 36px;
-    padding: 32px 80px;
-  }
-
-  .links {
-    gap: 36px;
-    overflow-x: visible;
-  }
-
-  .ctaMini {
-    display: inline-block;
   }
 }

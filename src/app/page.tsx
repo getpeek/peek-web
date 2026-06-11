@@ -4,12 +4,14 @@ import { Feature } from "@/landing/Feature/Feature";
 import { Hero } from "@/landing/Hero/Hero";
 import { Nav } from "@/landing/Nav/Nav";
 import { Starfield } from "@/landing/Starfield/Starfield";
+import { getLatestRelease } from "@/release/latestRelease";
 
-export default function Home() {
+export default async function Home() {
+  const release = await getLatestRelease();
   return (
     <>
       <Starfield />
-      <Nav />
+      <Nav downloadUrl={release.downloadUrl} />
       <main>
         <Hero />
         <DemoCanvas />
