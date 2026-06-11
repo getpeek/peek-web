@@ -66,7 +66,7 @@ export function QueryNode({ data }: NodeProps<QueryFlowNode>) {
           {status === "streaming" ? null : (
             <button
               type='button'
-              className={`${styles.run} pk-shimmer`}
+              className={`${styles.run} pk-glow pk-shimmer`}
               onClick={onRun}
               disabled={status !== "ready"}
               aria-label='Run query'

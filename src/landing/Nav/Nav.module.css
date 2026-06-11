@@ -2,29 +2,33 @@
   position: relative;
   z-index: 10;
 
-  /* Docs-style chrome: pinned bar, transparent and padded like the landing nav
-     until the page scrolls, then it compresses to --pk-nav-height and gains
-     blur + hairline so it reads over passing content. */
+  /* Docs-style chrome: a pinned, centered pill — transparent until the page
+     scrolls, then it gains blur + a hairline outline so it reads over passing
+     content. The fill lives on the pill (.inner), not the full-width bar. */
   &.sticky {
     position: sticky;
+    /* the gap lives on the sticky element's own `top` offset — a margin on the
+       pill would collapse through the nav and end up above the pin point */
     top: 0;
     z-index: 50;
-    transition:
-      background-color 0.25s ease,
-      box-shadow 0.25s ease;
+    transition: top 0.25s ease;
+    /* gutters so the pill never touches the viewport edge below its max-width */
+    padding-inline: 12px;
 
-    & .inner {
-      transition: padding 0.25s ease;
+    @media (min-width: 768px) {
+      padding-inline: 24px;
     }
 
+    /* detach the pill from the top edge once it gains chrome */
     &.scrolled {
-      background: rgba(5, 5, 17, 0.72);
-      backdrop-filter: blur(18px);
-      /* hairline as a shadow, not a border, so toggling it never shifts layout */
-      box-shadow: 0 1px 0 var(--pk-hairline);
+      top: 16px;
 
       & .inner {
-        padding-block: 12px;
+        background: rgba(5, 5, 17, 0.72);
+        backdrop-filter: blur(18px);
+        border-color: var(--pk-hairline-2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        padding-block: 10px;
       }
     }
   }
@@ -34,14 +38,22 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 20px;
-  max-width: 1600px;
-  margin: 0 auto;
+  max-width: 1280px;
+  margin: 8px auto;
+  padding: 12px 16px;
+  border-radius: 99px;
+  /* transparent now, colored on scroll — a permanent border avoids layout shift */
+  border: 1px solid transparent;
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    padding 0.25s ease;
 
   @media (min-width: 768px) {
     justify-content: space-between;
     gap: 36px;
-    padding: 32px 80px;
+    padding: 16px 28px;
   }
 }
 

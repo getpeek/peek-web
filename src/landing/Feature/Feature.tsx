@@ -9,7 +9,7 @@ export function Feature() {
         <div className={styles.feature}>
           <div className={styles.heading}>
             <SectionHeading accent='blue'>
-              Performance matters, even at <em>10k rows</em>.
+              Performant, even at <em>10k rows</em>.
             </SectionHeading>
             <p className={styles.sub}>
               Peek doesn't waste time rendering things you can't see.{" "}

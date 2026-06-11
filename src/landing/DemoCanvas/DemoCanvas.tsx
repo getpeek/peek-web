@@ -123,7 +123,11 @@ function CanvasChrome({
             </span>
           ) : (
             <span className={styles.shareWrap}>
-              <button type='button' className={`${styles.shareBtn} pk-shimmer`} onClick={onShare}>
+              <button
+                type='button'
+                className={`${styles.shareBtn} pk-glow pk-shimmer`}
+                onClick={onShare}
+              >
                 <svg
                   viewBox='0 0 24 24'
                   fill='none'

@@ -19,15 +19,20 @@
   --pk-green: rgb(41, 215, 22);
   --pk-olive: rgb(112, 135, 20);
   --pk-olive-2: rgb(175, 204, 62);
+  /* interactive-action accent — marks the clickable buttons on the demo canvas */
+  --pk-orange: rgb(255, 146, 43);
+  /* legible ink for text/icons sitting on a filled --pk-orange surface */
+  --pk-ink-on-orange: #1a1206;
 
   /* Surfaces / hairlines */
   --pk-hairline: rgba(255, 255, 255, 0.07);
   --pk-hairline-2: rgba(255, 255, 255, 0.12);
   --pk-card: rgba(20, 21, 40, 0.55);
 
-  /* Height of the sticky nav once scrolled/compressed (48px logo + 12px padding
-     each side); sticky offsets elsewhere (docs sidebar) must clear it. */
-  --pk-nav-height: 72px;
+  /* Bottom edge of the scrolled/compressed nav pill: 16px top offset + 1px
+     border + 10px padding + 48px logo + 10px + 1px ≈ 86px, plus breathing room.
+     Sticky offsets elsewhere (docs sidebar) must clear it. */
+  --pk-nav-height: 92px;
 
   /* Canvas / demo nodes (the real Peek app exposes these as --pk-type-* / node chrome) */
   --pk-type-agent: var(--pk-blue);
@@ -75,6 +80,10 @@ body {
   font-family: var(--pk-font-mono);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  /* The sticky nav lives in flow and shrinks on scroll; without this the
+     browser's scroll anchoring compensates for that height change by yanking
+     scrollY, which fights the collapse threshold near the top and jitters. */
+  overflow-anchor: none;
 }
 
 /* page content rides above the fixed cosmic background */
@@ -86,6 +95,10 @@ main {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+em {
+  color: var(--pk-ink);
 }
 
 /*
@@ -119,23 +132,22 @@ a {
 }
 
 /*
- * Shared "this is interactive" affordance: a periodic diagonal light sweep.
- * It originated on the demo canvas chart button and now marks every action
- * button inside the canvas nodes (Agent send, Query run, Result chart + the
- * follow-reference cells) so the cue reads the same on each. It lives here,
- * like the shiny-CTA keyframes above, because it's shared by sibling node
- * components rather than the property of any one. Apply it by adding the plain
- * `pk-shimmer` class alongside a component's own module class. The host must be
- * able to clip the sweep, so the utility sets position + overflow itself.
+ * Periodic diagonal light sweep marking a control as interactive. Used by the
+ * FeatureVideo play button and — paired with the `pk-glow` beacon below — by the
+ * demo-canvas action buttons. Apply by adding the plain `pk-shimmer` class
+ * alongside a component's own module class. The sweep is a moving gradient
+ * confined to the control's own rounded box (animated background-position, not a
+ * translated overlay), so the host needs no overflow clip — which keeps the box
+ * unclipped for the paired `pk-glow` beacon's expanding disc.
  */
 .pk-shimmer {
   position: relative;
-  overflow: hidden;
 }
 .pk-shimmer::after {
   content: "";
   position: absolute;
   inset: 0;
+  border-radius: inherit;
   pointer-events: none;
   background: linear-gradient(
     110deg,
@@ -143,7 +155,9 @@ a {
     rgba(255, 255, 255, 0.45) 50%,
     transparent 65%
   );
-  transform: translateX(-130%);
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  background-position: 150% 0;
   animation: pkShimmer 2.6s ease-in-out infinite;
 }
 /* a shimmer reads as "clickable"; don't advertise a disabled control */
@@ -153,15 +167,74 @@ a {
 }
 @keyframes pkShimmer {
   0% {
-    transform: translateX(-130%);
+    background-position: 150% 0;
   }
   55%,
   100% {
-    transform: translateX(130%);
+    background-position: -50% 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .pk-shimmer::after {
     animation: none;
+  }
+}
+
+/*
+ * Shared "this is interactive" affordance: an orange beacon, after EUI's
+ * EuiBeacon. A ring the shape of the button (border only, hollow centre) scales
+ * up and fades on a loop (transform + opacity, ease-out — smoother than a
+ * box-shadow spread), over a steady center halo. Paired with `pk-shimmer` on
+ * every primary action button on the demo canvas (Agent send, Query run, Result
+ * chart, and the canvas Share button) so the clickable cue reads the same on
+ * each. It lives here, like the shiny-CTA keyframes above, because it's shared by
+ * sibling components rather than the property of any one. Apply by adding the
+ * plain `pk-glow` class alongside a component's own module class. The ring sits
+ * behind the button face (own stacking context) so it appears to emanate from
+ * the edge; it's clipped only where an ancestor (the node) clips overflow.
+ */
+.pk-glow {
+  position: relative;
+  isolation: isolate;
+  /* steady center halo so the button glows between pings */
+  box-shadow: 0 0 9px 1px rgba(255, 146, 43, 0.45);
+}
+.pk-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  border: 2px solid var(--pk-orange);
+  pointer-events: none;
+  animation: pkGlow 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+/* a beacon reads as "clickable"; don't advertise a disabled control */
+.pk-glow:disabled,
+.pk-glow[aria-disabled="true"] {
+  box-shadow: none;
+}
+.pk-glow:disabled::before,
+.pk-glow[aria-disabled="true"]::before {
+  display: none;
+}
+/* grow out of the button edge, blurring and fading as it expands; brief rest before the next ping */
+@keyframes pkGlow {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+    filter: blur(0);
+  }
+  70%,
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+    filter: blur(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pk-glow::before {
+    animation: none;
+    opacity: 0;
   }
 }

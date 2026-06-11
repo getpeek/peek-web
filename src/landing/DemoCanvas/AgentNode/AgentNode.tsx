@@ -61,7 +61,7 @@ export function AgentNode({ data }: NodeProps<AgentFlowNode>) {
         />
         <button
           type='button'
-          className={`${styles.send} pk-shimmer`}
+          className={`${styles.send} pk-glow pk-shimmer`}
           onClick={onSend}
           disabled={sent}
           aria-label='Send message'

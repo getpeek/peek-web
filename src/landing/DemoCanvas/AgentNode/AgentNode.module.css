@@ -259,17 +259,18 @@
   width: 28px;
   height: 28px;
   flex-shrink: 0;
-  border: 1px solid var(--pk-node-border);
+  border: 1px solid var(--pk-orange);
   border-radius: 6px;
-  background: var(--pk-node-bg-2);
-  color: var(--pk-ink);
+  background: var(--pk-orange);
+  color: var(--pk-ink-on-orange);
   cursor: pointer;
   transition:
     background 0.12s,
     border-color 0.12s;
 }
 .send:hover:not(:disabled) {
-  background: var(--pk-hairline-2);
+  background: rgb(255, 162, 64);
+  border-color: rgb(255, 162, 64);
 }
 .send:disabled {
   opacity: 0.5;

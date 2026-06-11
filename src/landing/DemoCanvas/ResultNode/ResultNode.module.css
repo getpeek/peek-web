@@ -120,24 +120,22 @@
   align-items: center;
   gap: 5px;
   padding: 4px 11px;
-  border: 1px solid rgba(218, 230, 81, 0.55);
+  border: 1px solid var(--pk-orange);
   border-radius: 5px;
-  background: rgba(218, 230, 81, 0.14);
-  color: var(--pk-yellow);
-  font: 600 10px var(--pk-font-mono);
+  background: var(--pk-orange);
+  color: var(--pk-ink-on-orange);
+  font: 700 10px var(--pk-font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   transition:
     border-color 0.12s ease,
     background 0.12s ease,
-    box-shadow 0.12s ease,
     transform 0.12s ease;
 }
 .chartBtn:hover {
-  background: rgba(218, 230, 81, 0.26);
-  border-color: rgba(218, 230, 81, 0.9);
-  box-shadow: 0 0 14px rgba(218, 230, 81, 0.45);
+  background: rgb(255, 162, 64);
+  border-color: rgb(255, 162, 64);
   transform: translateY(-1px);
 }
 .chartBtn svg {

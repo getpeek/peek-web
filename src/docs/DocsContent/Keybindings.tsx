@@ -1,5 +1,5 @@
+import { Kbd } from "../Kbd/Kbd";
 import { keybindingCategories } from "./keybindingCategories";
-import { keyIcons } from "./keyIcons";
 import styles from "./Keybindings.module.css";
 
 export function Keybindings() {
@@ -12,18 +12,7 @@ export function Keybindings() {
             {rows.map(({ action, keys }) => (
               <div key={action} className={styles.row}>
                 <span className={styles.action}>{action}</span>
-                <span className={styles.keys}>
-                  {keys.map(key => {
-                    const icon = keyIcons[key];
-                    return icon ? (
-                      <kbd key={key} aria-label={icon.label}>
-                        {icon.icon}
-                      </kbd>
-                    ) : (
-                      <kbd key={key}>{key}</kbd>
-                    );
-                  })}
-                </span>
+                <Kbd>{keys.join(" + ")}</Kbd>
               </div>
             ))}
           </div>

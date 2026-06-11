@@ -44,7 +44,7 @@ export function ResultNode({ data }: NodeProps<ResultFlowNode>) {
         {hasNumericColumn && onChart ? (
           <button
             type='button'
-            className={`${styles.chartBtn} pk-shimmer`}
+            className={`${styles.chartBtn} pk-glow pk-shimmer`}
             onClick={onChart}
             title='Visualize as a bar chart'
           >
@@ -126,7 +126,7 @@ function Cell({
       <td className={className}>
         <button
           type='button'
-          className={`${styles.refCell} pk-shimmer`}
+          className={styles.refCell}
           onClick={() => onReference(String(value))}
           title='Show rows that reference this id'
         >
