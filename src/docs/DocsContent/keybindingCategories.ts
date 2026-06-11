@@ -15,6 +15,7 @@ export const keybindingCategories: KeybindingCategory[] = [
       { action: "Command palette", keys: ["⌘", "P"] },
       { action: "Workspace picker", keys: ["P"] },
       { action: "Deselect node", keys: ["esc"] },
+      { action: "Delete node", keys: ["backspace"] },
       { action: "New page", keys: ["⌘", "T"] },
       { action: "Close page", keys: ["⌘", "W"] },
       { action: "Next page", keys: ["⌘", "⇧", "]"] },

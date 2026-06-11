@@ -52,6 +52,7 @@
     var(--font-jetbrains-mono), "Monaspace Krypton", ui-monospace, SFMono-Regular, Menlo, monospace;
   --pk-font-display: var(--font-inter), system-ui, sans-serif;
   --pk-font-section: var(--font-montserrat), var(--font-inter), system-ui, sans-serif;
+  --pk-font-playful: var(--font-chewy), cursive;
 }
 
 * {

@@ -6,6 +6,8 @@ import { useEdgesState, useNodesState, useReactFlow, type Edge } from "@xyflow/r
 import type { AgentNodeData } from "./AgentNode/AgentNode";
 import type { QueryNodeData } from "./QueryNode/QueryNode";
 import type { ResultNodeData } from "./ResultNode/ResultNode";
+import type { DrawNodeData, DrawPoint } from "./DrawNode/DrawNode";
+import type { TextNodeData } from "./TextNode/TextNode";
 import type { CursorState } from "./RemoteCursor/CollabOverlay";
 import { CURSOR_START, type DemoNode } from "./flowGraph";
 import type { ResultRow } from "./data";
@@ -71,6 +73,30 @@ export function useFlowPrimitives(initialNodes: DemoNode[]) {
     [setNodes],
   );
 
+  const patchDrawById = useCallback(
+    (id: string, patch: Partial<DrawNodeData>) =>
+      setNodes(current =>
+        current.map(node =>
+          node.id === id && node.type === "draw"
+            ? { ...node, data: { ...node.data, ...patch } }
+            : node,
+        ),
+      ),
+    [setNodes],
+  );
+
+  const patchTextById = useCallback(
+    (id: string, patch: Partial<TextNodeData>) =>
+      setNodes(current =>
+        current.map(node =>
+          node.id === id && node.type === "text"
+            ? { ...node, data: { ...node.data, ...patch } }
+            : node,
+        ),
+      ),
+    [setNodes],
+  );
+
   const deanimateEdge = useCallback(
     (id: string) =>
       setEdges(current =>
@@ -116,6 +142,53 @@ export function useFlowPrimitives(initialNodes: DemoNode[]) {
       tick();
     },
     [schedule],
+  );
+
+  // Walks a pen stroke point-by-point: the cursor rides the pen tip while the
+  // draw node re-renders with one more point each tick, so the mark grows under
+  // the cursor. `baseStrokes` carries the strokes already inked in that node.
+  const traceStroke = useCallback(
+    (opts: {
+      id: string;
+      origin: Point;
+      points: DrawPoint[];
+      baseStrokes: DrawPoint[][];
+      onDone: () => void;
+    }) => {
+      let index = 0;
+      const tick = () => {
+        index += 1;
+        const [x, y] = opts.points[index - 1];
+        const position = { x: opts.origin.x + x, y: opts.origin.y + y };
+        cursorPos.current = position;
+        setCursor(current => (current ? { ...current, ...position } : current));
+        patchDrawById(opts.id, { strokes: [...opts.baseStrokes, opts.points.slice(0, index)] });
+        if (index < opts.points.length) {
+          schedule(26, tick);
+          return;
+        }
+        opts.onDone();
+      };
+      tick();
+    },
+    [schedule, patchDrawById],
+  );
+
+  const streamTextInto = useCallback(
+    (id: string, fullText: string, onDone: () => void) => {
+      let cursorIndex = 0;
+      const tick = () => {
+        cursorIndex += 1;
+        patchTextById(id, { text: fullText.slice(0, cursorIndex) });
+        if (cursorIndex < fullText.length) {
+          schedule(45, tick);
+          return;
+        }
+        onDone();
+      };
+      tick();
+    },
+    [patchTextById, schedule],
   );
 
   const streamSqlInto = useCallback(
@@ -169,10 +242,14 @@ export function useFlowPrimitives(initialNodes: DemoNode[]) {
     patchAgent,
     patchQueryById,
     patchResultNode,
+    patchDrawById,
+    patchTextById,
     deanimateEdge,
     pressCursor,
     glideCursor,
+    traceStroke,
     streamSqlInto,
     streamRowsInto,
+    streamTextInto,
   };
 }

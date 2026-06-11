@@ -1,0 +1,10 @@
+/* decoration only — never intercept canvas panning/clicks */
+.node {
+  pointer-events: none;
+}
+
+.surface {
+  display: block;
+  /* the freehand outline swells past the raw points; don't clip the arrowhead */
+  overflow: visible;
+}

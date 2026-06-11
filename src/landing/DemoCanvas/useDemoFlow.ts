@@ -66,8 +66,10 @@ export function useDemoFlow() {
     deanimateEdge,
     pressCursor,
     glideCursor,
+    traceStroke,
     streamSqlInto,
     streamRowsInto,
+    streamTextInto,
   } = useFlowPrimitives([createAgentNode(onSend)]);
 
   const startCollab = useCollabFinale({
@@ -86,6 +88,8 @@ export function useDemoFlow() {
     patchQueryById,
     streamSqlInto,
     streamRowsInto,
+    streamTextInto,
+    traceStroke,
     deanimateEdge,
   });
 

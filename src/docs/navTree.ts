@@ -14,7 +14,6 @@ export const navTree: DocsNavItem[] = [
       {
         label: "Workspaces",
         slug: "workspaces",
-        children: [{ label: "Connections", slug: "connections" }],
       },
       { label: "Themes", slug: "themes" },
       {

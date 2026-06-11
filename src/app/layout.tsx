@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import { JetBrains_Mono, Montserrat, Inter } from "next/font/google";
+import { Chewy, JetBrains_Mono, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 
 const jetBrainsMono = JetBrains_Mono({
@@ -23,6 +23,13 @@ const inter = Inter({
   style: ["normal", "italic"],
 });
 
+// the product's Text-node font (its --pk-font-playful); used by the demo canvas
+const chewy = Chewy({
+  variable: "--font-chewy",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: "Peek - the 2D database client",
   description:
@@ -37,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang='en'
-      className={`${jetBrainsMono.variable} ${montserrat.variable} ${inter.variable}`}
+      className={`${jetBrainsMono.variable} ${montserrat.variable} ${inter.variable} ${chewy.variable}`}
     >
       <body>
         <Analytics />

@@ -9,7 +9,7 @@ export function Closing() {
           <SectionHeading eyebrow='So many more features' align='start'>
             <span className={styles.featureList}>
               <em>Keyboard first.</em> <em>LSP.</em> <em>Command Palette.</em>{" "}
-              <em>Schema visualization.</em> <em>Themes.</em>
+              <em>Schema visualization.</em> <em>Themes.</em> <em>Git friendly.</em>
             </span>
           </SectionHeading>
         </div>
@@ -17,7 +17,7 @@ export function Closing() {
       <section className={styles.section}>
         <div className={styles.container}>
           <SectionHeading
-            eyebrow="Please i've spent so much time on this "
+            eyebrow="Please, I've spent so much time on this "
             accent='yellow'
             align='center'
             size='display'

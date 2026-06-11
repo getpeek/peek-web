@@ -51,6 +51,16 @@ export const keyIcons: Record<string, KeyIcon> = {
       </KeyIconSvg>
     ),
   },
+  "⌫": {
+    label: "Backspace",
+    icon: (
+      <KeyIconSvg>
+        <path d='M21 5H9.5a2 2 0 0 0-1.5.7l-4.3 5a1 1 0 0 0 0 1.3l4.3 5a2 2 0 0 0 1.5.7H21a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z' />
+        <path d='m17 9-5 6' />
+        <path d='m12 9 5 6' />
+      </KeyIconSvg>
+    ),
+  },
   "↑": {
     label: "Arrow up",
     icon: (

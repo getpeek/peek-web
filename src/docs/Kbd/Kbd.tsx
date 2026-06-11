@@ -11,6 +11,9 @@ const aliases: Record<string, string> = {
   shift: "⇧",
   ctrl: "⌃",
   control: "⌃",
+  backspace: "⌫",
+  delete: "⌫",
+  del: "⌫",
 };
 
 function resolveKey(token: string) {

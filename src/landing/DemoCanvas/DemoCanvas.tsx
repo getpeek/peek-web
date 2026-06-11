@@ -16,6 +16,8 @@ import { QueryNode } from "./QueryNode/QueryNode";
 import { ResultNode } from "./ResultNode/ResultNode";
 import { ChartNode } from "./ChartNode/ChartNode";
 import { VariableNode } from "./VariableNode/VariableNode";
+import { DrawNode } from "./DrawNode/DrawNode";
+import { TextNode } from "./TextNode/TextNode";
 import { CollabOverlay } from "./RemoteCursor/CollabOverlay";
 import { Toolbar } from "./Toolbar/Toolbar";
 import { FloatingEdge } from "./FloatingEdge";
@@ -30,6 +32,8 @@ const nodeTypes = {
   result: ResultNode,
   chart: ChartNode,
   variable: VariableNode,
+  draw: DrawNode,
+  text: TextNode,
 };
 const edgeTypes = { floating: FloatingEdge };
 

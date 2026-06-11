@@ -1,3 +1,4 @@
+import { Code } from "@/components/Code/Code";
 import { getLatestRelease } from "@/release/latestRelease";
 import styles from "./Install.module.css";
 
@@ -36,27 +37,13 @@ export async function Install() {
           <strong>Node</strong>, and <strong>Yarn</strong>.
         </p>
         <div className={styles.spacer} />
-        <div className={styles.codeWindow}>
-          <div className={styles.codeBar}>
-            <span className={styles.lights}>
-              <i />
-              <i />
-              <i />
-            </span>
-            <span className={styles.codeTitle}>~/dev</span>
-          </div>
-          <pre>
-            <span className={styles.prompt}>$ </span>
-            <span className={styles.cmd}>git</span> clone{" "}
-            <span className={styles.url}>git@github.com/getpeek/peek</span>
-            {"\n\n"}
-            <span className={styles.prompt}>$ </span>
-            <span className={styles.cmd}>cd</span> peek
-            {"\n\n"}
-            <span className={styles.prompt}>$ </span>
-            <span className={styles.cmd}>yarn</span> tauri <span className={styles.sub}>build</span>
-          </pre>
-        </div>
+        <Code lang='bash' title='~/dev'>
+          {`$ git clone git@github.com/getpeek/peek
+
+$ cd peek
+
+$ yarn tauri build`}
+        </Code>
       </div>
     </div>
   );

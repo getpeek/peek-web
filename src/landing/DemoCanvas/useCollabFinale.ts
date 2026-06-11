@@ -7,7 +7,6 @@ import {
   COLLAB_QUERY_POSITION,
   COLLAB_RESULT_ID,
   CURSOR_START,
-  QUERY_ID,
   RESULT_COLOR,
   createCollabQueryNode,
   createCollabResultNode,
@@ -15,6 +14,7 @@ import {
   type DemoPhase,
 } from "./flowGraph";
 import { COLLAB_RESULT_ROWS, MULTIPLAYER_SQL } from "./data";
+import { useCollabAnnotation } from "./useCollabAnnotation";
 import type { Point, useFlowPrimitives } from "./useFlowPrimitives";
 
 // the collab finale's choreography points (flow coords)
@@ -40,6 +40,8 @@ type CollabFinaleOptions = Pick<
   | "patchQueryById"
   | "streamSqlInto"
   | "streamRowsInto"
+  | "streamTextInto"
+  | "traceStroke"
   | "deanimateEdge"
 > & {
   phase: RefObject<DemoPhase>;
@@ -47,9 +49,10 @@ type CollabFinaleOptions = Pick<
 };
 
 // Multiplayer finale: Anna joins, drags a query node out of empty canvas, runs
-// it, and parks beside her streamed result. The whole sequence drives the
-// canvas autonomously; useDemoFlow locks the visitor's own node actions while
-// it plays and hands control back when it finishes.
+// it, then doodles a freehand arrow at her result and leaves a hand-written
+// note. The whole sequence drives the canvas autonomously; useDemoFlow locks
+// the visitor's own node actions while it plays and hands control back when it
+// finishes.
 export function useCollabFinale(options: CollabFinaleOptions) {
   const {
     phase,
@@ -67,6 +70,8 @@ export function useCollabFinale(options: CollabFinaleOptions) {
     patchQueryById,
     streamSqlInto,
     streamRowsInto,
+    streamTextInto,
+    traceStroke,
     deanimateEdge,
   } = options;
 
@@ -74,6 +79,19 @@ export function useCollabFinale(options: CollabFinaleOptions) {
   // it's defined; a stable wrapper pointing at the latest handler breaks the cycle.
   const collabRunRef = useRef<() => void>(() => {});
   const onCollabRun = useCallback(() => collabRunRef.current(), []);
+
+  const collabAnnotate = useCollabAnnotation({
+    phase,
+    setNodes,
+    fitView,
+    schedule,
+    glideCursor,
+    pressCursor,
+    patchAgent,
+    patchQueryById,
+    streamTextInto,
+    traceStroke,
+  });
 
   const collabShowResult = useCallback(() => {
     patchQueryById(COLLAB_QUERY_ID, { status: "done" });
@@ -96,20 +114,16 @@ export function useCollabFinale(options: CollabFinaleOptions) {
         maxZoom: 1,
       }),
     );
-    // Anna's cursor settles beside her result and stays — she's still here
+    // Anna's cursor settles beside her result — a beat before she starts drawing
     schedule(320, () => glideCursor(RESULT_PARK_POINT, 700));
     schedule(380, () =>
       streamRowsInto(COLLAB_RESULT_ID, COLLAB_RESULT_ROWS, () => {
         deanimateEdge("collab-query-result");
-        phase.current = "collab-finished";
-        // hand the canvas back to the visitor — re-arm the agent + query actions
-        patchAgent({ sent: false });
-        patchQueryById(QUERY_ID, { status: "ready" });
+        collabAnnotate();
       }),
     );
   }, [
     phase,
-    patchAgent,
     patchQueryById,
     setNodes,
     setEdges,
@@ -118,6 +132,7 @@ export function useCollabFinale(options: CollabFinaleOptions) {
     glideCursor,
     streamRowsInto,
     deanimateEdge,
+    collabAnnotate,
   ]);
 
   const collabRun = useCallback(() => {

@@ -5,6 +5,8 @@ import type { QueryFlowNode } from "./QueryNode/QueryNode";
 import type { ResultFlowNode } from "./ResultNode/ResultNode";
 import type { ChartFlowNode } from "./ChartNode/ChartNode";
 import type { VariableFlowNode } from "./VariableNode/VariableNode";
+import type { DrawFlowNode } from "./DrawNode/DrawNode";
+import type { TextFlowNode } from "./TextNode/TextNode";
 import {
   AGENT_PROMPT,
   COLLAB_RESULT_COLUMNS,
@@ -32,7 +34,9 @@ export type DemoNode =
   | QueryFlowNode
   | ResultFlowNode
   | ChartFlowNode
-  | VariableFlowNode;
+  | VariableFlowNode
+  | DrawFlowNode
+  | TextFlowNode;
 
 export type DemoPhase =
   | "idle"
@@ -48,6 +52,7 @@ export type DemoPhase =
   | "collabQuery"
   | "collabRunning"
   | "collabResult"
+  | "collabDrawing"
   | "collab-finished";
 
 // Anna's multiplayer finale drives the canvas autonomously; the visitor's own
@@ -58,6 +63,7 @@ export const COLLAB_ANIMATION_PHASES: DemoPhase[] = [
   "collabQuery",
   "collabRunning",
   "collabResult",
+  "collabDrawing",
 ];
 
 export const AGENT_ID = "agent";
@@ -69,6 +75,8 @@ export const CHART_ID = "chart";
 export const VARIABLE_ID = "variable";
 export const COLLAB_QUERY_ID = "collab-query";
 export const COLLAB_RESULT_ID = "collab-result";
+export const COLLAB_ARROW_ID = "collab-arrow";
+export const COLLAB_TEXT_ID = "collab-text";
 
 export const QUERY_COLOR = "rgb(186, 140, 240)";
 export const RESULT_COLOR = "rgb(120, 200, 150)";
@@ -89,6 +97,12 @@ const VARIABLE_POSITION = { x: 600, y: -150 };
 // cluster never overlaps them.
 export const COLLAB_QUERY_POSITION = { x: 1180, y: 920 };
 const COLLAB_RESULT_POSITION = { x: 1720, y: 900 };
+// Anna's annotation sits in the empty band under the collab cluster: the arrow
+// box's top-right corner reaches up toward the result's bottom edge, the note
+// sits left of the arrow's tail
+export const COLLAB_ARROW_POSITION = { x: 1600, y: 1080 };
+const COLLAB_ARROW_SIZE = { width: 260, height: 220 };
+export const COLLAB_TEXT_POSITION = { x: 1240, y: 1240 };
 // off the right edge: Anna's cursor flies in from here
 export const CURSOR_START = { x: 2320, y: 1060 };
 
@@ -214,6 +228,35 @@ export function createChartNode(
     type: "chart",
     position: CHART_POSITION,
     data: { title, valueColumn, values },
+  };
+}
+
+// Anna's freehand arrow + note. Both spawn empty (strokes trace in under her
+// cursor, the note types on) with explicit dimensions so fitView can frame the
+// annotation area before anything is visible. Decoration: not draggable —
+// dragging the arrow away from the result it points at would break the joke.
+export function createCollabArrowNode(): DrawFlowNode {
+  return {
+    id: COLLAB_ARROW_ID,
+    type: "draw",
+    position: COLLAB_ARROW_POSITION,
+    ...COLLAB_ARROW_SIZE,
+    draggable: false,
+    selectable: false,
+    data: { strokes: [], strokeWidth: 3.5, color: "var(--pk-collab-anna)" },
+  };
+}
+
+export function createCollabTextNode(): TextFlowNode {
+  return {
+    id: COLLAB_TEXT_ID,
+    type: "text",
+    position: COLLAB_TEXT_POSITION,
+    width: 380,
+    height: 60,
+    draggable: false,
+    selectable: false,
+    data: { text: "" },
   };
 }
 

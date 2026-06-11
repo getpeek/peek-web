@@ -1,6 +1,8 @@
 // Dummy content driving the canvas demo. The flow walks Ask → Run → Branch;
 // these constants feed the Agent (chat), Query (SQL) and Result nodes.
 
+import type { DrawPoint } from "./DrawNode/DrawNode";
+
 export const AGENT_PROMPT =
   "find the top 10 users ranked by how many jobs ads they are assigned to.";
 
@@ -116,3 +118,41 @@ export const COLLAB_RESULT_ROWS: ResultRow[] = [
   { id: 1, name: "You", role: "Host" },
   { id: 2, name: "Anna", role: "Guest" },
 ];
+
+// ---- Anna's hand-drawn annotation (the finale's epilogue) ----
+export const COLLAB_NOTE_TEXT = "Multiplayer support :)";
+
+type Vec = { x: number; y: number };
+
+// Samples a cubic bezier into freehand pen points. The sine wobble fakes hand
+// jitter and the pressure arc makes perfect-freehand taper the stroke's ends —
+// deterministic on purpose so dev double-renders draw the identical arrow.
+function sampleStroke(a: Vec, c1: Vec, c2: Vec, b: Vec, count: number): DrawPoint[] {
+  return Array.from({ length: count }, (_, i) => {
+    const t = i / (count - 1);
+    const u = 1 - t;
+    const x = u ** 3 * a.x + 3 * u ** 2 * t * c1.x + 3 * u * t ** 2 * c2.x + t ** 3 * b.x;
+    const y = u ** 3 * a.y + 3 * u ** 2 * t * c1.y + 3 * u * t ** 2 * c2.y + t ** 3 * b.y;
+    const wobble = Math.sin(t * 23) * 1.6;
+    const pressure = 0.55 + 0.35 * Math.sin(t * Math.PI);
+    return [x + wobble, y + wobble * 0.6, pressure];
+  });
+}
+
+// node-local coords inside the collab-arrow node: the shaft sweeps up-right
+// from beside the note toward the result table, the head pinches into a V
+export const ARROW_SHAFT = sampleStroke(
+  { x: 25, y: 195 },
+  { x: 130, y: 205 },
+  { x: 200, y: 140 },
+  { x: 212, y: 38 },
+  30,
+);
+
+export const ARROW_HEAD = sampleStroke(
+  { x: 178, y: 62 },
+  { x: 208, y: 34 },
+  { x: 216, y: 34 },
+  { x: 230, y: 82 },
+  16,
+);
