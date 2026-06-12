@@ -41,7 +41,7 @@
   color: var(--pk-ink);
 }
 
-/* shortcut hint — hidden on mobile (no keyboard), revealed on larger screens */
+/* shortcut hint - hidden on mobile (no keyboard), revealed on larger screens */
 .kbd {
   display: none;
   padding: 1px 4px;

@@ -30,6 +30,15 @@
   }
 }
 
+.fullImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--pk-hairline-2);
+  margin: 20px 0 0;
+}
+
 .placeholder {
   margin-top: 8px;
   border: 1px dashed var(--pk-hairline-2);

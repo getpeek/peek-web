@@ -1,6 +1,6 @@
 /* Screen-space overlay for Anna's cursor (mirrors the product's
-   RemoteCursorsLayer). The pointer is a constant screen size — it does not scale
-   with canvas zoom — and `--pk-collab-anna` is the single source for its color. */
+   RemoteCursorsLayer). The pointer is a constant screen size - it does not scale
+   with canvas zoom - and `--pk-collab-anna` is the single source for its color. */
 .layer {
   /* override the shared .react-flow__panel 16px inset so the panel origin lines
      up with the pane origin (0,0) that our screen-coord math assumes */

@@ -22,7 +22,7 @@ const ORB_BELOW_ANCHOR = 0.7;
 // Extra push-down (CSS px) below the radius-based offset, so the wordmark stays
 // readable above the planet. Mobile-first: the radius keys off the narrow
 // viewport width, so the same push-down that reads well on desktop drops the
-// (smaller) orb clear of the heading on phones — a lighter offset there keeps
+// (smaller) orb clear of the heading on phones - a lighter offset there keeps
 // "Peek" peeking out from behind the planet. Mirrors the CSS 768px breakpoint.
 const ORB_OFFSET_PX = 48;
 const ORB_OFFSET_PX_DESKTOP = 80;
@@ -41,7 +41,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       // mask. Straight alpha (premultipliedAlpha:false) renders correctly in
       // Chrome but blooms in Safari, which composites the canvas as if it were
       // premultiplied and so shows low-coverage pixels at full colour. Doing the
-      // multiply in-shader is the portable path — same maths, no reliance on the
+      // multiply in-shader is the portable path - same maths, no reliance on the
       // browser's straight→premultiplied conversion.
       premultipliedAlpha: true,
       antialias: true,
@@ -75,7 +75,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     // off the SHORTER dimension (matching the shader's coord()); the centre is
     // anchored a fixed distance below the wordmark so it stays glued to the
     // heading at every viewport size. The blur targets below derive from these
-    // pixel values — driving them off orbCenterY/height instead lets the blur
+    // pixel values - driving them off orbCenterY/height instead lets the blur
     // drift up the orb as the screen narrows (orbCenterY is inflated in portrait
     // to undo coord()'s y-remap, and the radius isn't a fraction of height).
     // st-space, for the shader uniform
@@ -287,7 +287,7 @@ export function useOrbCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
-      // NB: deliberately not calling WEBGL_lose_context here — under React
+      // NB: deliberately not calling WEBGL_lose_context here - under React
       // StrictMode (dev) the effect remounts on the same canvas, and a lost
       // context can't be re-acquired, which would blank the orb. The context
       // is released on GC, which is fine for one small page-lifetime canvas.

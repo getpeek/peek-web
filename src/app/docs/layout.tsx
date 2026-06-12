@@ -6,7 +6,7 @@ import { Starfield } from "@/landing/Starfield/Starfield";
 import { getLatestRelease } from "@/release/latestRelease";
 
 export const metadata: Metadata = {
-  title: { default: "Peek — Docs", template: "%s — Peek Docs" },
+  title: { default: "Peek - Docs", template: "%s - Peek Docs" },
   description:
     "Everything you need to install Peek, connect your first database, and tune workspaces, themes, AI, and multiplayer to your team.",
 };

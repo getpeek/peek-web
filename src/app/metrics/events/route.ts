@@ -27,7 +27,7 @@ export async function POST(request: Request): Promise<Response> {
     return new Response(null, { status: 503 });
   }
 
-  // occurred_at defaults to now() server-side — no spoofable client clock
+  // occurred_at defaults to now() server-side - no spoofable client clock
   await sql`INSERT INTO events (event) VALUES (${body})`;
   return new Response(null, { status: 204 });
 }

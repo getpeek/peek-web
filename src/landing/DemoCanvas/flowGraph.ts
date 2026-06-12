@@ -233,7 +233,7 @@ export function createChartNode(
 
 // Anna's freehand arrow + note. Both spawn empty (strokes trace in under her
 // cursor, the note types on) with explicit dimensions so fitView can frame the
-// annotation area before anything is visible. Decoration: not draggable —
+// annotation area before anything is visible. Decoration: not draggable -
 // dragging the arrow away from the result it points at would break the joke.
 export function createCollabArrowNode(): DrawFlowNode {
   return {
@@ -260,7 +260,7 @@ export function createCollabTextNode(): TextFlowNode {
   };
 }
 
-// Anna's query result — lists who's in the session. No follow-reference / chart
+// Anna's query result - lists who's in the session. No follow-reference / chart
 // affordances (it's the demo's closing beat, not another branch point).
 export function createCollabResultNode(): ResultFlowNode {
   return {

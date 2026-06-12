@@ -72,7 +72,7 @@ export function BucketChart({ buckets, granularity }: BucketChartProps) {
           <div
             key={stack.bucket}
             className={styles.column}
-            title={`${stack.bucket} — ${stack.cta + stack.demo} events (${stack.cta} beta, ${stack.demo} demo)`}
+            title={`${stack.bucket} - ${stack.cta + stack.demo} events (${stack.cta} beta, ${stack.demo} demo)`}
           >
             <div className={styles.bar}>
               <span

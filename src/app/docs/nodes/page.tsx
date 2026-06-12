@@ -12,7 +12,7 @@ export default function NodesPage() {
     <>
       <h1 className={styles.title}>Nodes</h1>
       <p className={styles.lede}>
-        Everything on the canvas is a node. Each node type has a focused purpose — compose them
+        Everything on the canvas is a node. Each node type has a focused purpose - compose them
         freely to build up your data workflow.
       </p>
 
@@ -27,7 +27,7 @@ export default function NodesPage() {
           are shown inline so you always know the result age.
         </p>
         <p>
-          Query nodes support <strong>variable interpolation</strong> — any{" "}
+          Query nodes support <strong>variable interpolation</strong> - any{" "}
           <strong>Variable</strong> node wired into a Query node replaces the matching{" "}
           <code>@name</code> placeholder at run time.
         </p>
@@ -107,34 +107,27 @@ export default function NodesPage() {
 
       <DocsSection slug='variable' title='Variable' level={2}>
         <p>
-          A Variable node holds a named value — a date range, a user ID, a status string - that can
+          A Variable node holds a named value - a date range, a user ID, a status string - that can
           be injected into one or more Query nodes. Change the value once and every connected query
           automotatically gets the new value.
         </p>
         <p>
-          Variable values can also be arrays, to simplify <code>WHERE ... IN (@ids)</code> queries
+          Variable values can also be arrays, to simplify <code>WHERE ... IN (@ids)</code> queries.
+          Just click the array button on the varable to turn it from a value to a list
         </p>
-        . Just click the array button on the varable to turn it from a value to a list
         <p>
           Reference a variable in SQL with the @-syntax:
           <code>{"WHERE created_at > @start_date"}</code>. The variable name must match the node
           label exactly (case-sensitive).
         </p>
-      </DocsSection>
-
-      <DocsSection slug='text' title='Text' level={2}>
         <p>
-          A Text node is a freeform note. Use it to document a canvas, label a section of the
-          workflow, or leave a comment for a collaborator.
-        </p>
-        <p>
-          Text nodes have no connections and do not affect query execution; they exist purely for
-          human context.
+          Finally, can you have a variable automatically connect to all query nodes on the canvas,
+          as well as any future query node by making the variable node global.
         </p>
         <Image
           className={nodeStyles.nodeImage}
-          src='/tools/text.png'
-          alt='Text node'
+          src='/tools/variables.png'
+          alt='Variables node'
           width={1168}
           height={657}
         />
@@ -154,6 +147,24 @@ export default function NodesPage() {
           className={nodeStyles.nodeImage}
           src='/tools/draw.png'
           alt='Draw node'
+          width={1168}
+          height={657}
+        />
+      </DocsSection>
+
+      <DocsSection slug='text' title='Text' level={2}>
+        <p>
+          A Text node is a freeform note. Use it to document a canvas, label a section of the
+          workflow, or leave a comment for a collaborator.
+        </p>
+        <p>
+          Text nodes have no connections and do not affect query execution; they exist purely for
+          human context.
+        </p>
+        <Image
+          className={nodeStyles.nodeImage}
+          src='/tools/text.png'
+          alt='Text node'
           width={1168}
           height={657}
         />

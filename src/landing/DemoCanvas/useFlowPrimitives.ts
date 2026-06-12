@@ -25,7 +25,7 @@ export function useFlowPrimitives(initialNodes: DemoNode[]) {
 
   const [nodes, setNodes, onNodesChange] = useNodesState<DemoNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  // Anna's cursor — a screen-space overlay positioned from these flow coords
+  // Anna's cursor - a screen-space overlay positioned from these flow coords
   const [cursor, setCursor] = useState<CursorState | null>(null);
   // tween source of truth, kept off React state so each tick reads the latest
   const cursorPos = useRef<Point>(CURSOR_START);

@@ -1,6 +1,6 @@
 // Minimal per-line tokenizers for the <Code> window. The code shown on the
 // site is our own trusted content, so these only need to cover the handful of
-// token kinds we render — not a full grammar. Mirrors the demo canvas's
+// token kinds we render - not a full grammar. Mirrors the demo canvas's
 // tokenizeSqlLine in spirit.
 
 export type CodeLang = "json" | "bash";

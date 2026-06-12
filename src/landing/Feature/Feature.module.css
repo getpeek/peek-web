@@ -46,7 +46,7 @@
   padding: 0 24px;
   display: flex;
   flex-direction: column;
-  /* headings only for now — demos land beside each one later */
+  /* headings only for now - demos land beside each one later */
   gap: 96px;
 
   @media (min-width: 768px) {

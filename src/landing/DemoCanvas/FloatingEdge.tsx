@@ -5,7 +5,7 @@ import { BaseEdge, getBezierPath, useInternalNode, type EdgeProps } from "@xyflo
 import { getEdgeParams } from "./edges";
 
 // Edge that always connects the facing sides of the source/target nodes,
-// recomputed each render from live node positions — stays well-routed as nodes
+// recomputed each render from live node positions - stays well-routed as nodes
 // are dragged to either side instead of clinging to fixed handles.
 export function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps) {
   const sourceNode = useInternalNode(source);

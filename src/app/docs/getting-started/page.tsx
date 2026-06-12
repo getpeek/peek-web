@@ -10,7 +10,7 @@ export default function GettingStartedPage() {
       <p className={styles.lede}>
         Open your first connection, run a query, and read results on the canvas.
       </p>
-      <div className={styles.placeholder}>Design this section next — first-run walkthrough</div>
+      <div className={styles.placeholder}>Design this section next - first-run walkthrough</div>
     </>
   );
 }

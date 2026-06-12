@@ -1,5 +1,5 @@
 // Inline SVG icons lifted from the desktop app's toolbar (@tabler/icons).
-// peek-web has no icon library — these mirror the Tabler paths pixel-for-pixel
+// peek-web has no icon library - these mirror the Tabler paths pixel-for-pixel
 // so the demo toolbar matches the product. Size is set by CSS (16px).
 
 interface IconProps {

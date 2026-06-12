@@ -7,7 +7,7 @@ const escapeHtml = (text: string): string =>
 
 /*
  * Auto-generated release notes embed contributor-written PR titles verbatim,
- * so raw HTML is escaped and non-web link protocols are neutralized — the same
+ * so raw HTML is escaped and non-web link protocols are neutralized - the same
  * posture as GitHub's own release rendering. `breaks` matches GitHub too:
  * release bodies treat a single newline as a line break.
  */

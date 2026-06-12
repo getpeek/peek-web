@@ -29,7 +29,7 @@ type BranchActionsOptions = Pick<
   phase: RefObject<DemoPhase>;
 };
 
-// The "Branch" half of the flow — the actions that grow new subtrees off the
+// The "Branch" half of the flow - the actions that grow new subtrees off the
 // result node: following a referenced row, and charting the numeric column.
 // Both are locked while the multiplayer finale owns the canvas.
 export function useBranchActions(options: BranchActionsOptions) {

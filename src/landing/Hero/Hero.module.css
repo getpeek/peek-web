@@ -94,8 +94,7 @@
     0 0 30px rgba(5, 5, 17, 0.8);
 
   & em {
-    font-style: normal;
-    color: var(--pk-yellow);
+    font-style: italic;
   }
 
   @media (min-width: 768px) {
@@ -111,7 +110,7 @@
 }
 
 /*
- * Animated "shiny" CTA — ryanmulligan.dev/blog/css-property-new-style
+ * Animated "shiny" CTA - ryanmulligan.dev/blog/css-property-new-style
  * (codepen.io/hexagoncircle/pen/MWMqXbK), re-themed to Peek's cosmic palette.
  * The @property registrations it relies on live in globals.css.
  */

@@ -6,9 +6,9 @@ import { getLatestRelease } from "@/release/latestRelease";
 import { listReleases } from "@/release/listReleases";
 
 export const metadata: Metadata = {
-  title: "Peek — Changelog",
+  title: "Peek - Changelog",
   description:
-    "Release notes for every Peek build — what's new, fixed, and improved in each version.",
+    "Release notes for every Peek build - what's new, fixed, and improved in each version.",
 };
 
 export default async function ChangelogPage() {

@@ -5,7 +5,7 @@ import { getStroke } from "perfect-freehand";
 
 import styles from "./DrawNode.module.css";
 
-// x, y, pressure — in node-local coordinates
+// x, y, pressure - in node-local coordinates
 export type DrawPoint = [number, number, number];
 
 export type DrawNodeData = {

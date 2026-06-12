@@ -1,4 +1,4 @@
-/* decoration only — never intercept canvas panning/clicks */
+/* decoration only - never intercept canvas panning/clicks */
 .node {
   pointer-events: none;
 }

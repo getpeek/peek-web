@@ -2,7 +2,7 @@ import type { ReleaseNote } from "@/release/listReleases";
 import { releaseBodyHtml } from "./releaseBodyHtml";
 import styles from "./ReleaseEntry.module.css";
 
-// Fixed locale — dates render at build/revalidate time, so the server's locale
+// Fixed locale - dates render at build/revalidate time, so the server's locale
 // must not leak into the page.
 const publishedDate = new Intl.DateTimeFormat("en-US", { dateStyle: "long" });
 

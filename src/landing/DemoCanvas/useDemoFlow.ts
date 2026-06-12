@@ -26,7 +26,7 @@ import { useCollabFinale } from "./useCollabFinale";
 import { useBranchActions } from "./useBranchActions";
 
 // Streaming nodes grow downward after they spawn, so they're framed once they
-// reach full height (see streamSql/streamRows) — symmetric padding then centers
+// reach full height (see streamSql/streamRows) - symmetric padding then centers
 // the created node, which keeps its footer clear of the bottom toolbar.
 const CREATED_NODE_PADDING = 0.32;
 

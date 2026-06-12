@@ -9,7 +9,7 @@ export default function KeybindingsPage() {
     <>
       <h1 className={styles.title}>Keybindings</h1>
       <p className={styles.lede}>
-        Drive Peek from the keyboard. Defaults are listed below — every binding can be remapped from{" "}
+        Drive Peek from the keyboard. Defaults are listed below - every binding can be remapped from{" "}
         <strong>Settings → Keybindings</strong>.
       </p>
       <Keybindings />

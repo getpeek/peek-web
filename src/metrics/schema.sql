@@ -5,7 +5,7 @@
 -- Privacy: each click stores only an allowlisted event name (see events.ts)
 -- and a server-generated timestamp. No IP, user agent, referrer, or any kind
 -- of visitor identifier is ever written. (Vercel's own request logs
--- transiently contain IPs as standard infrastructure — outside this table.)
+-- transiently contain IPs as standard infrastructure - outside this table.)
 
 CREATE TABLE IF NOT EXISTS events (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

@@ -19,7 +19,7 @@
   --pk-green: rgb(41, 215, 22);
   --pk-olive: rgb(112, 135, 20);
   --pk-olive-2: rgb(175, 204, 62);
-  /* interactive-action accent — marks the clickable buttons on the demo canvas */
+  /* interactive-action accent - marks the clickable buttons on the demo canvas */
   --pk-orange: rgb(255, 146, 43);
   /* legible ink for text/icons sitting on a filled --pk-orange surface */
   --pk-ink-on-orange: #1a1206;
@@ -47,7 +47,7 @@
   --pk-node-border: rgba(255, 255, 255, 0.08);
   --pk-node-shadow: 0 18px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-  /* Type — *-font vars are provided by next/font in layout.tsx */
+  /* Type - *-font vars are provided by next/font in layout.tsx */
   --pk-font-mono:
     var(--font-jetbrains-mono), "Monaspace Krypton", ui-monospace, SFMono-Regular, Menlo, monospace;
   --pk-font-display: var(--font-inter), system-ui, sans-serif;
@@ -137,11 +137,11 @@ em {
 
 /*
  * Periodic diagonal light sweep marking a control as interactive. Used by the
- * FeatureVideo play button and — paired with the `pk-glow` beacon below — by the
+ * FeatureVideo play button and - paired with the `pk-glow` beacon below - by the
  * demo-canvas action buttons. Apply by adding the plain `pk-shimmer` class
  * alongside a component's own module class. The sweep is a moving gradient
  * confined to the control's own rounded box (animated background-position, not a
- * translated overlay), so the host needs no overflow clip — which keeps the box
+ * translated overlay), so the host needs no overflow clip - which keeps the box
  * unclipped for the paired `pk-glow` beacon's expanding disc.
  */
 .pk-shimmer {
@@ -187,7 +187,7 @@ em {
 /*
  * Shared "this is interactive" affordance: an orange beacon, after EUI's
  * EuiBeacon. A ring the shape of the button (border only, hollow centre) scales
- * up and fades on a loop (transform + opacity, ease-out — smoother than a
+ * up and fades on a loop (transform + opacity, ease-out - smoother than a
  * box-shadow spread), over a steady center halo. Paired with `pk-shimmer` on
  * every primary action button on the demo canvas (Agent send, Query run, Result
  * chart, and the canvas Share button) so the clickable cue reads the same on

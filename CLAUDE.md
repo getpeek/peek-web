@@ -1,9 +1,9 @@
 # Peek Web
 
-The marketing site for **Peek** — a Figma-like GUI database client where users
+The marketing site for **Peek** - a Figma-like GUI database client where users
 place nodes (AI assist, query, result, chart, chat…) on an infinite 2D canvas.
 The product itself is a Tauri/React desktop app; **this repo is the public
-landing page only**. There is no database, no auth, no host bridge here — it is
+landing page only**. There is no database, no auth, no host bridge here - it is
 a static, content + animation site.
 
 The current page is a single cosmic-themed landing page: full-viewport hero with
@@ -18,15 +18,15 @@ sections, a telemetry stats row, a closing CTA, and a footer.
 
 # Stack
 
-- **Framework**: Next.js 16 (**App Router**) — `src/app/`.
+- **Framework**: Next.js 16 (**App Router**) - `src/app/`.
 - **UI**: React 19 with the **React Compiler enabled** (`next.config.ts:
 reactCompiler: true`). Do not add manual `useMemo`/`useCallback`/`memo` unless
   you've verified the compiler can't handle it.
 - **Language**: TypeScript, `strict`. Path alias `@/*` → `src/*`.
 - **Styling**: CSS Modules (`*.module.css`), one per component, with native CSS
   nesting. Global tokens + base styles live in `src/app/globals.css`.
-- **Fonts**: `next/font/google` — JetBrains Mono (mono/body), Montserrat
-  (section headings), Inter (display / italic wordmark — stands in for the
+- **Fonts**: `next/font/google` - JetBrains Mono (mono/body), Montserrat
+  (section headings), Inter (display / italic wordmark - stands in for the
   paid "Söhne" used in the source design).
 - **Package manager**: npm (`package-lock.json`). No yarn/pnpm.
 
@@ -35,8 +35,8 @@ reactCompiler: true`). Do not add manual `useMemo`/`useCallback`/`memo` unless
 ```
 src/
   app/
-    layout.tsx        Root layout — fonts, <html>/<body>, metadata. (default export, Next requirement)
-    page.tsx          Landing page — composes the section components. (default export, Next requirement)
+    layout.tsx        Root layout - fonts, <html>/<body>, metadata. (default export, Next requirement)
+    page.tsx          Landing page - composes the section components. (default export, Next requirement)
     globals.css       --pk-* design tokens, base body styles, reset
   landing/            The landing-page feature; one folder per section
     Starfield/        Fixed cosmic background (universe + nebulae)
@@ -56,11 +56,11 @@ Adapted from the Peek product repo. Follow it here.
 ## General
 
 - Avoid nested `if`s; keep cyclomatic complexity low. Return early.
-- Prefer immutability — chain `const` declarations rather than mutating locals.
+- Prefer immutability - chain `const` declarations rather than mutating locals.
 - Use full words for identifiers (`truncatedString`, not `truncString`).
 - TypeScript: never widen to `any`; prefer `unknown` and narrow. Use
   `import type { … }` for type-only imports.
-- **Named exports only — with one exception:** Next.js requires `default`
+- **Named exports only - with one exception:** Next.js requires `default`
   exports for `app/page.tsx`, `app/layout.tsx`, and other special files
   (`loading`, `error`, `not-found`, route handlers). Use a default export there
   and **only** there. Everything else (section components, hooks, helpers) uses
@@ -68,7 +68,7 @@ Adapted from the Peek product repo. Follow it here.
 
 ## Proximity principle
 
-Code that changes together lives together. Group by feature, not by file type —
+Code that changes together lives together. Group by feature, not by file type -
 never create catch-all `utils/`, `types/`, or `helpers/` folders that collect
 files solely by kind.
 
@@ -97,13 +97,13 @@ take a single options object instead.
 ## Comments
 
 Comments explain **why**, never **what**. Only write one when the reason is
-non-obvious — a hidden constraint, a workaround, a subtle ordering requirement.
+non-obvious - a hidden constraint, a workaround, a subtle ordering requirement.
 
 ## Styling
 
 - **Theme tokens are CSS variables prefixed `--pk-*`**, defined in
   `src/app/globals.css`. **Never hardcode palette colors, font stacks, or the
-  shared hairline/card surfaces** — reference a `--pk-*` token. Add a new token
+  shared hairline/card surfaces** - reference a `--pk-*` token. Add a new token
   there if one is missing. (One-off derived `rgba()` glows/shadows that are an
   alpha variant used a single time may stay inline; the rule targets the reusable
   palette.)
@@ -111,20 +111,20 @@ non-obvious — a hidden constraint, a workaround, a subtle ordering requirement
 - Use **nested rules** rather than flattening everything to the top level.
 - Dynamic/state-driven classes are toggled in JSX
   (`className={clsx(styles.node, entered && styles.entered)}`), not by string
-  class manipulation — CSS Module class names are hashed.
+  class manipulation - CSS Module class names are hashed.
 
 ## Responsive (mobile-first)
 
-Every section has to work on mobile — no part of the site is desktop-only. Treat
+Every section has to work on mobile - no part of the site is desktop-only. Treat
 small screens as the default, not an afterthought.
 
 - **Write mobile-first.** The base, breakpoint-free rules are the mobile layout.
-  Layer the larger-screen styles on top inside a `min-width` media query —
+  Layer the larger-screen styles on top inside a `min-width` media query -
   never start desktop and patch downward with `max-width` overrides.
 - **One breakpoint is enough.** Go straight from mobile to everything else; the
   site uses `@media (min-width: 768px)` as that single breakpoint value. Don't
   add tablet / desktop tiers unless a section genuinely can't be served by the two.
-- **Nest the media query inside the rule it overrides** — not in a separate block
+- **Nest the media query inside the rule it overrides** - not in a separate block
   at the bottom of the file. Put the `@media (min-width: 768px)` override directly
   inside the selector whose declarations it changes, so the mobile base and its
   larger-screen variant sit together and it's obvious at a glance which rules are
@@ -147,16 +147,16 @@ small screens as the default, not an afterthought.
 
 # Commands
 
-- `npm run dev` — Next dev server (Turbopack).
-- `npm run build` — production build + type-check. Run before declaring a task
+- `npm run dev` - Next dev server (Turbopack).
+- `npm run build` - production build + type-check. Run before declaring a task
   done if you've touched TS/TSX.
-- `npm run start` — serve the production build.
+- `npm run start` - serve the production build.
 
 # Don'ts
 
 - Don't add backwards-compat shims or `// removed: …` markers when refactoring.
   Delete the old code.
-- Don't introduce a new styling system (Tailwind, CSS-in-JS) or state library —
+- Don't introduce a new styling system (Tailwind, CSS-in-JS) or state library -
   extend what's here. Plain React state + CSS Modules is the house style.
 - Don't add `useMemo`/`useCallback`/`memo` reflexively; the React Compiler
   handles most of it. Only add them with a measured reason.

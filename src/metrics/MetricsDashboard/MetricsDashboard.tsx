@@ -22,7 +22,7 @@ export function MetricsDashboard({ granularity, buckets, totals }: MetricsDashbo
       <main className={styles.page}>
         <h1 className={styles.title}>Metrics</h1>
         <p className={styles.notice}>
-          No database configured — set <code>DATABASE_URL</code> and run the one-time setup in{" "}
+          No database configured - set <code>DATABASE_URL</code> and run the one-time setup in{" "}
           <code>src/metrics/schema.sql</code>.
         </p>
       </main>
@@ -37,7 +37,7 @@ export function MetricsDashboard({ granularity, buckets, totals }: MetricsDashbo
       <header className={styles.head}>
         <h1 className={styles.title}>Metrics</h1>
         <p className={styles.sub}>
-          Anonymous interaction counts — an event name and a timestamp, nothing else.
+          Anonymous interaction counts - an event name and a timestamp, nothing else.
         </p>
       </header>
 

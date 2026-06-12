@@ -8,7 +8,7 @@ import {
 } from "@/metrics/queries";
 
 export const metadata: Metadata = {
-  title: "Peek — Metrics",
+  title: "Peek - Metrics",
   // public but unlinked; keep it out of search indexes
   robots: { index: false, follow: false },
 };

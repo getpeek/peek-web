@@ -185,7 +185,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* clickable "follow reference" id — distinct brighter colour + dotted underline,
+/* clickable "follow reference" id - distinct brighter colour + dotted underline,
    and a one-shot flash that fires just after the row finishes animating in. */
 .refCell {
   display: inline-flex;

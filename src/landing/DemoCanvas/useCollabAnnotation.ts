@@ -18,7 +18,7 @@ import { ARROW_HEAD, ARROW_SHAFT, COLLAB_NOTE_TEXT } from "./data";
 import type { Point, useFlowPrimitives } from "./useFlowPrimitives";
 
 // the annotation's choreography points (flow coords):
-// pen-down points for the arrow strokes — arrow origin + each stroke's first sample
+// pen-down points for the arrow strokes - arrow origin + each stroke's first sample
 const SHAFT_START: Point = {
   x: COLLAB_ARROW_POSITION.x + ARROW_SHAFT[0][0],
   y: COLLAB_ARROW_POSITION.y + ARROW_SHAFT[0][1],
@@ -74,7 +74,7 @@ export function useCollabAnnotation(options: CollabAnnotationOptions) {
           streamTextInto(COLLAB_TEXT_ID, COLLAB_NOTE_TEXT, () => {
             glideCursor(NOTE_PARK_POINT, 500);
             phase.current = "collab-finished";
-            // hand the canvas back to the visitor — re-arm the agent + query actions
+            // hand the canvas back to the visitor - re-arm the agent + query actions
             patchAgent({ sent: false });
             patchQueryById(QUERY_ID, { status: "ready" });
           }),

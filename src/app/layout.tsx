@@ -15,7 +15,7 @@ const montserrat = Montserrat({
   weight: ["500", "600", "700", "800", "900"],
 });
 
-// Inter stands in for the paid "Söhne" used in the source design — its variable
+// Inter stands in for the paid "Söhne" used in the source design - its variable
 // axis covers the italic 900 wordmark and the italic 800 brand mark.
 const inter = Inter({
   variable: "--font-inter",

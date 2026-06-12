@@ -1,4 +1,4 @@
-// SDF "orb" — a filled planet (the original design's warm sphere gradient) with
+// SDF "orb" - a filled planet (the original design's warm sphere gradient) with
 // a faint rim. The SDF lens-blur technique from tympanus.net/Tutorials/SDFLensBlur
 // is retained as the interaction: a soft circle tracks the pointer and feathers
 // the planet's edge + blooms the rim wherever the cursor is near.
@@ -61,11 +61,11 @@ void main() {
   vec2 posMouse = mx + 0.5;
 
   // var=1 lens: a soft disc around the cursor whose value sets how soft the
-  // WHOLE planet is — so the gradient itself blurs/reveals, not just the edge.
+  // WHOLE planet is - so the gradient itself blurs/reveals, not just the edge.
   float lens = fill(sdCircle(st, posMouse), 0.19, 0.31);
 
   // Filled planet: edge crisp by default (just sub-pixel AA via fwidth), blooming
-  // into a soft gradient cloud where the lens sits — exactly like demo var=1.
+  // into a soft gradient cloud where the lens sits - exactly like demo var=1.
   float sd = sdCircle(st, u_center);
   float edge = max(lens * 1.4, fwidth(sd));
   float mask = fill(sd, u_radius * 2.0, edge);

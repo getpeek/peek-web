@@ -115,7 +115,7 @@ export function useCollabFinale(options: CollabFinaleOptions) {
         maxZoom: 1,
       }),
     );
-    // Anna's cursor settles beside her result — a beat before she starts drawing
+    // Anna's cursor settles beside her result - a beat before she starts drawing
     schedule(320, () => glideCursor(RESULT_PARK_POINT, 700));
     schedule(380, () =>
       streamRowsInto(COLLAB_RESULT_ID, COLLAB_RESULT_ROWS, () => {

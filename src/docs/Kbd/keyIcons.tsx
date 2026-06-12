@@ -24,7 +24,7 @@ function KeyIconSvg({ children }: { children: ReactNode }) {
 }
 
 /* Symbol keys render as icons for legibility; anything not in the map
-   (letters, brackets, "esc") stays text. Keyed by the canonical symbol — the
+   (letters, brackets, "esc") stays text. Keyed by the canonical symbol - the
    Kbd component maps word aliases (meta, shift, ctrl) onto these. */
 export const keyIcons: Record<string, KeyIcon> = {
   "⌘": {

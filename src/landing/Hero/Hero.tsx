@@ -27,8 +27,7 @@ export async function Hero() {
       </div>
 
       <p className={styles.tagline}>
-        A DB GUI that helps you <em>explore your data</em>. <br />
-        Open source and free forever.
+        All of your database, <em>on one infinite canvas</em>.
       </p>
 
       <div className={styles.heroCta}>

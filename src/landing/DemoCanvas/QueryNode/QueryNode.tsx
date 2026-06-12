@@ -13,7 +13,7 @@ export type QueryNodeData = {
   sql: string;
   status: QueryStatus;
   onRun: () => void;
-  // when set, the node renders scaled from its top-left — drives the "drag to
+  // when set, the node renders scaled from its top-left - drives the "drag to
   // create" grow-out in the multiplayer demo (0 → 1 as the cursor drags)
   createScale?: number;
 };

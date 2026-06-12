@@ -14,7 +14,7 @@ function getCenter(rect: Rect) {
 }
 
 // Intersection of the line between the two node centers and the bounding box of
-// `intersectionNode` — the edge anchor floats on the node border facing the
+// `intersectionNode` - the edge anchor floats on the node border facing the
 // other node, so it never skews when a node is dragged to either side.
 function getNodeIntersection(intersectionNode: InternalNode<Node>, targetNode: InternalNode<Node>) {
   const a = getNodeRect(intersectionNode);

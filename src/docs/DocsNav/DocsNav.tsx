@@ -10,7 +10,7 @@ import styles from "./DocsNav.module.css";
 const DOCS_ROOT = "/docs";
 
 // Items nested under a top-level entry are in-page sections (anchors) on their
-// parent's route — the only slugs scrollspy can track, and only while that
+// parent's route - the only slugs scrollspy can track, and only while that
 // parent page is open.
 const collectSlugs = (items: DocsNavItem[]): string[] =>
   items.flatMap(item => [item.slug, ...collectSlugs(item.children ?? [])]);

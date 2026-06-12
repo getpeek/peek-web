@@ -125,7 +125,7 @@ export const COLLAB_NOTE_TEXT = "Multiplayer support :)";
 type Vec = { x: number; y: number };
 
 // Samples a cubic bezier into freehand pen points. The sine wobble fakes hand
-// jitter and the pressure arc makes perfect-freehand taper the stroke's ends —
+// jitter and the pressure arc makes perfect-freehand taper the stroke's ends -
 // deterministic on purpose so dev double-renders draw the identical arrow.
 function sampleStroke(a: Vec, c1: Vec, c2: Vec, b: Vec, count: number): DrawPoint[] {
   return Array.from({ length: count }, (_, i) => {

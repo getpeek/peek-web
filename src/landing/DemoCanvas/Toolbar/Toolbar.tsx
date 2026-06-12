@@ -12,7 +12,7 @@ interface ToolDef {
   event: EventName;
 }
 
-// Mirrors the desktop app's toolbar; visual only — these buttons place nodes in
+// Mirrors the desktop app's toolbar; visual only - these buttons place nodes in
 // the product, but here they're a static advertisement of the available tools.
 // Clicks are still counted: they signal visitors expecting the toolbar to work.
 const tools: ToolDef[] = [

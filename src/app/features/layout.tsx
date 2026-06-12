@@ -6,9 +6,9 @@ import { Starfield } from "@/landing/Starfield/Starfield";
 import { getLatestRelease } from "@/release/latestRelease";
 
 export const metadata: Metadata = {
-  title: { default: "Peek — Features", template: "%s — Peek Features" },
+  title: { default: "Peek - Features", template: "%s - Peek Features" },
   description:
-    "A tour of everything Peek puts on the canvas — the command palette, multiplayer, AI agents, inline editing, import/export, variables, and themes.",
+    "A tour of everything Peek puts on the canvas - the command palette, multiplayer, AI agents, inline editing, import/export, variables, and themes.",
 };
 
 export default async function FeaturesRootLayout({ children }: { children: React.ReactNode }) {

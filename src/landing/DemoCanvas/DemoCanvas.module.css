@@ -1,7 +1,7 @@
 .section {
   position: relative;
   /* horizontal gutter on mobile leaves bare page beside the canvas so a touch
-     drag there scrolls the page — the canvas itself eats all pan/zoom input */
+     drag there scrolls the page - the canvas itself eats all pan/zoom input */
   padding: 60px 24px 120px;
 
   @media (min-width: 768px) {
@@ -119,7 +119,7 @@
   color: var(--pk-ink-mute);
 }
 
-/* joined collaborator's initials — pops in when Anna joins the session */
+/* joined collaborator's initials - pops in when Anna joins the session */
 .avatar {
   display: grid;
   place-items: center;
@@ -158,7 +158,7 @@
   }
 }
 
-/* titlebar invite affordance — swapped in-place for Anna's avatar once she joins */
+/* titlebar invite affordance - swapped in-place for Anna's avatar once she joins */
 .shareWrap {
   position: relative;
   display: inline-flex;

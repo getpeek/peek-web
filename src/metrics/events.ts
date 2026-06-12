@@ -1,4 +1,4 @@
-// Shared by the client tracker and the ingest route — keep it dependency-free
+// Shared by the client tracker and the ingest route - keep it dependency-free
 // so it's safe in both bundles.
 export const EVENT_NAMES = [
   "cta.nav",
