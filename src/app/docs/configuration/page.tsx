@@ -88,9 +88,20 @@ export default function ConfigurationPage() {
         <DocsSection slug='agent' title='Agent' level={3}>
           <p>
             Bring your own model use the built in Peek agent. Peek currently requires you to run
-            your own OpenAI compatible server via Ollama, llama.cpp, lmstudio or similar. Once you
-            have that running you can just need to specify which model and endpoint to use in your
-            settings.
+            your own OpenAI compatible server via{" "}
+            <a href='https://ollama.com/' target='_blank' rel='noopener'>
+              Ollama
+            </a>
+            ,{" "}
+            <a href='https://github.com/ggerganov/llama.cpp' target='_blank' rel='noopener'>
+              llama.cpp
+            </a>
+            ,{" "}
+            <a href='https://lmstudio.ai/' target='_blank' rel='noopener'>
+              lmstudio
+            </a>{" "}
+            or similar. Once you have that running you can just need to specify which model and
+            endpoint to use in your settings.
           </p>
 
           <Code lang='json' title='~/peek/settings.json'>
@@ -110,6 +121,24 @@ export default function ConfigurationPage() {
             particularly useful for automating repetitive tasks, or inspect the database as you are
             collaborating with an agent.
           </p>
+
+          <p>
+            First you need to ensure that the mcp is enabled in Peek. The default settings are that
+            it's <em>off</em> and the default port is 13315, but it can be overriden.{" "}
+            <em>You will need to restart Peek for the MCP to initialize</em>.
+          </p>
+          <Code lang='json' title='~/.peek/settings.json'>
+            {`{
+  "ai": {
+    "mcp": {
+      "enabled": true,
+      "port": 13315
+    }
+  }
+}`}
+          </Code>
+          <br />
+          <p>After you've enabled the MCP, you can add it to your favorite coding agent.</p>
 
           <Code lang='bash' title='Claude Code'>
             {`claude mcp add --transport http peek http://localhost:13315`}

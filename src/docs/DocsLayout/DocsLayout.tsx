@@ -15,7 +15,6 @@ export async function DocsLayout({ children }: { children: ReactNode }) {
         <div className={styles.inner}>
           {children}
           <footer className={styles.foot}>
-            <span>Peek Labs · getpeek.dev</span>
             <span>v{release.version} · public beta</span>
           </footer>
         </div>
