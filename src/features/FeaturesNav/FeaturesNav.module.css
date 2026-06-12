@@ -1,0 +1,19 @@
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.link {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--pk-ink-2);
+  padding: 7px 0;
+  transition: color 0.15s ease;
+
+  &:hover,
+  &.active {
+    color: var(--pk-ink);
+  }
+}

@@ -17,12 +17,12 @@ export function Closing() {
       <section className={styles.section}>
         <div className={styles.container}>
           <SectionHeading
-            eyebrow="Please, I've spent so much time on this "
+            eyebrow="Please, I've spent so much time on this"
             accent='yellow'
             align='center'
             size='display'
           >
-            Have a <em>Peek </em> around.
+            Have a <em>Peek</em>.
           </SectionHeading>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { DocsLayout } from "@/docs/DocsLayout/DocsLayout";
+import { SubpageLayout } from "@/components/SubpageLayout/SubpageLayout";
+import { DocsNav } from "@/docs/DocsNav/DocsNav";
 import { Nav } from "@/landing/Nav/Nav";
 import { Starfield } from "@/landing/Starfield/Starfield";
 import { getLatestRelease } from "@/release/latestRelease";
@@ -17,7 +18,9 @@ export default async function DocsRootLayout({ children }: { children: React.Rea
       <Starfield />
       <Nav sticky currentPage='docs' downloadUrl={release.downloadUrl} />
       <main>
-        <DocsLayout>{children}</DocsLayout>
+        <SubpageLayout eyebrow='Documentation' nav={<DocsNav />}>
+          {children}
+        </SubpageLayout>
       </main>
     </>
   );

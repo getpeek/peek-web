@@ -1,5 +1,5 @@
 import Link from "next/link";
-import styles from "@/docs/DocsContent/DocsContent.module.css";
+import styles from "@/components/SubpageLayout/SubpageContent.module.css";
 
 export default function DocsHome() {
   return (

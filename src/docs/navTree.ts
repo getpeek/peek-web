@@ -8,6 +8,19 @@ export const navTree: DocsNavItem[] = [
   { label: "Installation", slug: "installation" },
   { label: "Getting started", slug: "getting-started" },
   {
+    label: "Nodes",
+    slug: "nodes",
+    children: [
+      { label: "Query", slug: "query" },
+      { label: "Result", slug: "result" },
+      { label: "Agent", slug: "agent-node" },
+      { label: "Chart", slug: "chart" },
+      { label: "Variable", slug: "variable" },
+      { label: "Text", slug: "text" },
+      { label: "Draw", slug: "draw" },
+    ],
+  },
+  {
     label: "Configuration",
     slug: "configuration",
     children: [

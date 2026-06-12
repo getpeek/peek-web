@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import styles from "@/docs/DocsContent/DocsContent.module.css";
+import styles from "@/components/SubpageLayout/SubpageContent.module.css";
 
 export const metadata: Metadata = { title: "Getting started" };
 

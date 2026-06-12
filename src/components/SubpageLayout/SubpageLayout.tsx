@@ -1,17 +1,22 @@
 import type { ReactNode } from "react";
 import { getLatestRelease } from "@/release/latestRelease";
-import { DocsNav } from "../DocsNav/DocsNav";
-import styles from "./DocsLayout.module.css";
+import styles from "./SubpageLayout.module.css";
 
-export async function DocsLayout({ children }: { children: ReactNode }) {
+type SubpageLayoutProps = {
+  eyebrow: string;
+  nav: ReactNode;
+  children: ReactNode;
+};
+
+export async function SubpageLayout({ eyebrow, nav, children }: SubpageLayoutProps) {
   const release = await getLatestRelease();
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
-        <p className={styles.eyebrow}>Documentation</p>
-        <DocsNav />
+        <p className={styles.eyebrow}>{eyebrow}</p>
+        {nav}
       </aside>
-      <article className={styles.doc}>
+      <article className={styles.content}>
         <div className={styles.inner}>
           {children}
           <footer className={styles.foot}>

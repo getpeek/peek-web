@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Code } from "@/components/Code/Code";
 import { DocsSection } from "@/docs/DocsContent/DocsSection";
 import { Kbd } from "@/docs/Kbd/Kbd";
-import styles from "@/docs/DocsContent/DocsContent.module.css";
+import styles from "@/components/SubpageLayout/SubpageContent.module.css";
 
 export const metadata: Metadata = { title: "Configuration" };
 

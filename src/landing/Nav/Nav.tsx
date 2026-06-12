@@ -10,7 +10,7 @@ const githubUrl = "https://github.com/getpeek/peek";
 
 type NavProps = {
   sticky?: boolean;
-  currentPage?: "docs" | "changelog";
+  currentPage?: "docs" | "changelog" | "features";
   downloadUrl: string;
 };
 
@@ -29,7 +29,12 @@ export function Nav({ sticky = false, currentPage, downloadUrl }: NavProps) {
           </Link>
         </div>
         <div className={styles.links}>
-          <a href='/#features'>Features</a>
+          <Link
+            href='/features'
+            className={currentPage === "features" ? styles.current : undefined}
+          >
+            Features
+          </Link>
           <Link href='/docs' className={currentPage === "docs" ? styles.current : undefined}>
             Docs
           </Link>

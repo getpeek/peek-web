@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import styles from "./DocsContent.module.css";
+import styles from "./DocsSection.module.css";
 
 type DocsSectionProps = {
   slug: string;
