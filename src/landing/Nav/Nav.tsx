@@ -3,6 +3,7 @@
 import Link from "next/link";
 import styles from "./Nav.module.css";
 import Image from "next/image";
+import { TrackedLink } from "@/metrics/TrackedLink";
 import { useScrolled } from "./useScrolled";
 
 const githubUrl = "https://github.com/getpeek/peek";
@@ -37,9 +38,9 @@ export function Nav({ sticky = false, currentPage, downloadUrl }: NavProps) {
             GitHub
           </a>
         </div>
-        <a className={styles.ctaMini} href={downloadUrl}>
+        <TrackedLink event='cta.nav' className={styles.ctaMini} href={downloadUrl}>
           Get the Beta →
-        </a>
+        </TrackedLink>
       </div>
     </nav>
   );

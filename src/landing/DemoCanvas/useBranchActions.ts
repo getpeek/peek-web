@@ -17,6 +17,7 @@ import {
   type DemoPhase,
 } from "./flowGraph";
 import { RESULT_COLUMNS, RESULT_ROWS } from "./data";
+import { track } from "@/metrics/track";
 import type { useFlowPrimitives } from "./useFlowPrimitives";
 
 type FlowPrimitives = ReturnType<typeof useFlowPrimitives>;
@@ -41,6 +42,7 @@ export function useBranchActions(options: BranchActionsOptions) {
       if (COLLAB_ANIMATION_PHASES.includes(phase.current)) {
         return;
       }
+      track("demo.reference");
       phase.current = "referenced";
 
       setNodes(current => [
@@ -71,6 +73,7 @@ export function useBranchActions(options: BranchActionsOptions) {
     if (COLLAB_ANIMATION_PHASES.includes(phase.current)) {
       return;
     }
+    track("demo.chart");
     const valueColumn = RESULT_COLUMNS.find(column => column.kind === "num");
     if (!valueColumn) {
       return;

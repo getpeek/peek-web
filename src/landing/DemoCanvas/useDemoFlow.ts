@@ -20,6 +20,7 @@ import {
   type DemoPhase,
 } from "./flowGraph";
 import { AGENT_PROMPT, AGENT_REPLY, RESULT_ROWS, SQL_TEXT } from "./data";
+import { track } from "@/metrics/track";
 import { useFlowPrimitives } from "./useFlowPrimitives";
 import { useCollabFinale } from "./useCollabFinale";
 import { useBranchActions } from "./useBranchActions";
@@ -137,6 +138,7 @@ export function useDemoFlow() {
     if (phase.current !== "idle" && phase.current !== "collab-finished") {
       return;
     }
+    track("demo.send");
     // re-asking restarts the pipeline: clear Anna and everything the prior run built
     setCollabJoined(false);
     setCursor(null);
@@ -202,6 +204,7 @@ export function useDemoFlow() {
     if (COLLAB_ANIMATION_PHASES.includes(phase.current)) {
       return;
     }
+    track("demo.run");
     phase.current = "running";
     patchQueryById(QUERY_ID, { status: "running" });
 
@@ -235,6 +238,7 @@ export function useDemoFlow() {
   runRef.current = run;
 
   const reset = useCallback(() => {
+    track("demo.reset");
     clearTimers();
     phase.current = "idle";
     setCollabJoined(false);

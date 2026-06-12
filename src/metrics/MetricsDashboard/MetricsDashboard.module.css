@@ -1,0 +1,151 @@
+.page {
+  max-inline-size: 920px;
+  margin: 0 auto;
+  padding: 3rem 1rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    padding: 5rem 2rem 7rem;
+    gap: 2rem;
+  }
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--pk-font-section);
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  letter-spacing: -0.02em;
+}
+
+.sub {
+  margin: 0;
+  color: var(--pk-ink-mute);
+  font-size: 0.85rem;
+}
+
+.notice {
+  margin: 0;
+  color: var(--pk-ink-mute);
+  font-size: 0.85rem;
+
+  code {
+    color: var(--pk-ink-2);
+  }
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: 768px) {
+    gap: 1rem;
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem;
+  background: var(--pk-card);
+  border: 1px solid var(--pk-hairline);
+  border-radius: 14px;
+
+  @media (min-width: 768px) {
+    padding: 1.5rem;
+  }
+}
+
+.statValue {
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  color: var(--pk-yellow);
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: var(--pk-ink-mute);
+
+  @media (min-width: 768px) {
+    font-size: 0.8rem;
+  }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background: var(--pk-card);
+  border: 1px solid var(--pk-hairline);
+  border-radius: 14px;
+
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+}
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.panelTitle {
+  margin: 0;
+  font-family: var(--pk-font-section);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+
+  a {
+    padding: 0.3rem 0.9rem;
+    border: 1px solid var(--pk-hairline-2);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    color: var(--pk-ink-2);
+    text-transform: capitalize;
+  }
+
+  .active {
+    color: var(--pk-ink);
+    border-color: var(--pk-yellow);
+  }
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+
+  th {
+    color: var(--pk-ink-mute);
+    font-weight: 500;
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.55rem 0.4rem;
+    border-bottom: 1px solid var(--pk-hairline);
+  }
+
+  th:last-child,
+  td:last-child {
+    text-align: right;
+  }
+}

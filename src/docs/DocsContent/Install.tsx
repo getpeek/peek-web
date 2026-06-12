@@ -1,4 +1,5 @@
 import { Code } from "@/components/Code/Code";
+import { TrackedLink } from "@/metrics/TrackedLink";
 import { getLatestRelease } from "@/release/latestRelease";
 import styles from "./Install.module.css";
 
@@ -13,7 +14,11 @@ export async function Install() {
           {" for Apple Silicon. Drag Peek into Applications and you’re done."}
         </p>
         <div className={styles.spacer} />
-        <a className={styles.downloadButton} href={release.downloadUrl}>
+        <TrackedLink
+          event='cta.docs-install'
+          className={styles.downloadButton}
+          href={release.downloadUrl}
+        >
           <svg
             viewBox='0 0 24 24'
             fill='none'
@@ -26,7 +31,7 @@ export async function Install() {
             <path d='M12 3v12m0 0l-4-4m4 4l4-4M5 21h14' />
           </svg>
           Download .dmg
-        </a>
+        </TrackedLink>
         <div className={styles.meta}>v{release.version} · Apple Silicon</div>
       </div>
 

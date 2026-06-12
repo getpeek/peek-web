@@ -22,6 +22,7 @@ import { CollabOverlay } from "./RemoteCursor/CollabOverlay";
 import { Toolbar } from "./Toolbar/Toolbar";
 import { FloatingEdge } from "./FloatingEdge";
 import { useDemoFlow } from "./useDemoFlow";
+import { track } from "@/metrics/track";
 import { ANNA } from "./data";
 import { SectionHeading } from "../SectionHeading/SectionHeading";
 import styles from "./DemoCanvas.module.css";
@@ -110,7 +111,10 @@ function CanvasChrome({
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const { zoom } = useViewport();
 
-  const recenter = () => fitView({ ...FIT_VIEW_OPTIONS, duration: 500 });
+  const recenter = () => {
+    track("demo.fit-view");
+    fitView({ ...FIT_VIEW_OPTIONS, duration: 500 });
+  };
 
   return (
     <>
@@ -177,11 +181,25 @@ function CanvasChrome({
 
       <Panel position='bottom-left'>
         <div className={styles.zoomCluster}>
-          <button type='button' onClick={() => zoomOut()} aria-label='Zoom out'>
+          <button
+            type='button'
+            onClick={() => {
+              track("demo.zoom-out");
+              zoomOut();
+            }}
+            aria-label='Zoom out'
+          >
             −
           </button>
           <span className={styles.lvl}>{Math.round(zoom * 100)}%</span>
-          <button type='button' onClick={() => zoomIn()} aria-label='Zoom in'>
+          <button
+            type='button'
+            onClick={() => {
+              track("demo.zoom-in");
+              zoomIn();
+            }}
+            aria-label='Zoom in'
+          >
             +
           </button>
           <button type='button' onClick={recenter} aria-label='Fit view'>

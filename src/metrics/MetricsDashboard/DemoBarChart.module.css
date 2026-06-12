@@ -1,0 +1,44 @@
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr 2.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 8rem 1fr 3rem;
+    font-size: 0.8rem;
+  }
+}
+
+.label {
+  color: var(--pk-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track {
+  block-size: 10px;
+  background: var(--pk-hairline);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar {
+  display: block;
+  block-size: 100%;
+  background: var(--pk-blue);
+  border-radius: inherit;
+}
+
+.count {
+  color: var(--pk-ink-mute);
+  text-align: right;
+}

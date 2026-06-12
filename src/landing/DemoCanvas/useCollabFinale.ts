@@ -14,6 +14,7 @@ import {
   type DemoPhase,
 } from "./flowGraph";
 import { COLLAB_RESULT_ROWS, MULTIPLAYER_SQL } from "./data";
+import { track } from "@/metrics/track";
 import { useCollabAnnotation } from "./useCollabAnnotation";
 import type { Point, useFlowPrimitives } from "./useFlowPrimitives";
 
@@ -202,6 +203,7 @@ export function useCollabFinale(options: CollabFinaleOptions) {
     if (phase.current.startsWith("collab")) {
       return;
     }
+    track("demo.share");
     phase.current = "collabJoining";
     setCollabJoined(true);
 

@@ -1,4 +1,5 @@
 import { getLatestRelease } from "@/release/latestRelease";
+import { TrackedLink } from "@/metrics/TrackedLink";
 import styles from "./Hero.module.css";
 import { OrbCanvas } from "./OrbCanvas/OrbCanvas";
 
@@ -31,7 +32,7 @@ export async function Hero() {
       </p>
 
       <div className={styles.heroCta}>
-        <a className={styles.cta} href={release.downloadUrl}>
+        <TrackedLink event='cta.hero' className={styles.cta} href={release.downloadUrl}>
           <span>Get the Beta</span>
           <svg
             viewBox='0 0 24 24'
@@ -43,7 +44,7 @@ export async function Hero() {
           >
             <path d='M5 12h14M13 5l7 7-7 7' />
           </svg>
-        </a>
+        </TrackedLink>
       </div>
 
       <div className={styles.heroFoot}>
