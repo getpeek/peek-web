@@ -1,0 +1,123 @@
+.entry {
+  position: relative;
+  padding: 0 0 36px 28px;
+
+  @media (min-width: 768px) {
+    padding-left: 36px;
+    padding-bottom: 48px;
+  }
+
+  /* dot centered on the timeline rail (the <ol>'s 1px left border) */
+  &::before {
+    content: "";
+    position: absolute;
+    left: -4.5px;
+    top: 7px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--pk-yellow);
+    box-shadow: 0 0 10px rgba(218, 230, 81, 0.45);
+  }
+
+  &:last-child {
+    padding-bottom: 8px;
+  }
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+}
+
+.version {
+  font-family: var(--pk-font-mono);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--pk-ink);
+  /* globals.css underlines [target="_blank"]; the hairline border is the affordance here */
+  text-decoration: none;
+  border-bottom: 1px solid var(--pk-hairline-2);
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-bottom-color: var(--pk-ink);
+  }
+}
+
+.date {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pk-ink-faint);
+}
+
+.body {
+  margin-top: 10px;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--pk-ink-2);
+  /* bare compare-URLs must wrap, not blow out the mobile viewport */
+  overflow-wrap: anywhere;
+
+  & p {
+    margin: 0 0 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  & strong {
+    color: var(--pk-ink);
+    font-weight: 500;
+  }
+
+  & a {
+    color: var(--pk-ink);
+    border-bottom: 1px solid var(--pk-hairline-2);
+    transition: border-color 0.15s ease;
+
+    &:hover {
+      border-bottom-color: var(--pk-ink);
+    }
+  }
+
+  & h2,
+  & h3 {
+    font-family: var(--pk-font-section);
+    color: var(--pk-ink);
+    margin: 20px 0 8px;
+  }
+
+  & h2 {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+
+  & h3 {
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  & ul {
+    margin: 0 0 10px;
+    padding-left: 20px;
+  }
+
+  & li {
+    margin-bottom: 4px;
+  }
+
+  & code {
+    font-family: var(--pk-font-mono);
+    font-size: 12px;
+    background: var(--pk-card);
+    border: 1px solid var(--pk-hairline);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+}
