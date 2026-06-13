@@ -3,6 +3,7 @@ import { SubpageNav } from "@/components/SubpageNav/SubpageNav";
 
 const navTree: SubpageNavItem[] = [
   { label: "Command Palette", slug: "command-palette" },
+  { label: "Schema Explorer", slug: "schema-explorer" },
   { label: "Multiplayer", slug: "multiplayer" },
   { label: "AI Agents", slug: "ai-agents" },
   { label: "Editing Data", slug: "editing-data" },
