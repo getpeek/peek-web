@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { DocsSection } from "@/docs/DocsContent/DocsSection";
-import styles from "@/components/SubpageLayout/SubpageContent.module.css";
 import { Kbd } from "@/docs/Kbd/Kbd";
-import nodeStyles from "./Nodes.module.css";
+import styles from "@/components/SubpageLayout/SubpageContent.module.css";
 
 export const metadata: Metadata = { title: "Nodes" };
 
@@ -32,7 +31,7 @@ export default function NodesPage() {
           <code>@name</code> placeholder at run time.
         </p>
         <Image
-          className={nodeStyles.nodeImage}
+          className={styles.fullImage}
           src='/tools/query.png'
           alt='Query node'
           width={1168}
@@ -46,7 +45,7 @@ export default function NodesPage() {
           while dragging over results to select multiple nodes.
         </p>
         <p>
-          Right click a cell to copy it's value, or create a variable node pre-populated with the
+          Right click a cell to copy its value, or create a variable node pre-populated with the
           cell value. You can also right click column headers to export the column data or use the
           entire column as a variable.
         </p>
@@ -55,7 +54,7 @@ export default function NodesPage() {
           is disabled by default to avoid leaking data to AI agents.
         </p>
         <Image
-          className={nodeStyles.nodeImage}
+          className={styles.fullImage}
           src='/tools/result.png'
           alt='Result node'
           width={1168}
@@ -63,23 +62,23 @@ export default function NodesPage() {
         />
       </DocsSection>
 
-      <DocsSection slug='agent-node' title='Agent' level={2}>
+      <DocsSection slug='agent' title='Agent' level={2}>
         <p>
-          An Agent node opens a conversation with Peek's AI assistant. You can ask it to write a
-          query, explain a result, suggest an index, or reason over anything else on the canvas.
+          An Agent node opens a conversation with Peek&apos;s AI assistant. You can ask it to write
+          a query, explain a result, suggest an index, or reason over anything else on the canvas.
         </p>
         <p>
           The agent is canvas-aware - it can read the SQL in connected Query nodes and the schema of
           the active connection, as well as create pages, update nodes and move the camera. It never
-          receives raw query results unless you explicitly wire it intointo the chat, so sensitive
-          row data stays off the wire.
+          receives raw query results unless you explicitly wire it into the chat, so sensitive row
+          data stays off the wire.
         </p>
         <p>
-          One thing agents can't do is execute queries, so you don't have to worry about them
-          running amok on your data.
+          One thing agents can&apos;t do is execute queries, so you don&apos;t have to worry about
+          them running amok on your data.
         </p>
         <Image
-          className={nodeStyles.nodeImage}
+          className={styles.fullImage}
           src='/tools/agent.png'
           alt='Agent node'
           width={1168}
@@ -94,10 +93,10 @@ export default function NodesPage() {
         </p>
         <p>
           Chart nodes show bar charts by default, but other chart options are available to switch to
-          in Chart node toolbar.
+          in the Chart node toolbar.
         </p>
         <Image
-          className={nodeStyles.nodeImage}
+          className={styles.fullImage}
           src='/tools/chart.png'
           alt='Chart node'
           width={1168}
@@ -107,27 +106,34 @@ export default function NodesPage() {
 
       <DocsSection slug='variable' title='Variable' level={2}>
         <p>
-          A Variable node holds a named value - a date range, a user ID, a status string - that can
-          be injected into one or more Query nodes. Change the value once and every connected query
-          automotatically gets the new value.
+          A Variable node holds one or more named rows - a date range, a user ID, a status string.
+          Reference any of them in SQL with the <code>@</code>-syntax, like{" "}
+          <code>{"WHERE created_at > @start_date"}</code>. The name must be a valid identifier and
+          is matched exactly - <code>@start_date</code> is case-sensitive - and Peek is careful
+          about where it substitutes, so an email like <code>users@example.com</code> is never
+          mistaken for a variable.
         </p>
         <p>
-          Variable values can also be arrays, to simplify <code>WHERE ... IN (@ids)</code> queries.
-          Just click the array button on the varable to turn it from a value to a list
+          Variables reach a query <strong>through an edge</strong>: wire a Variable node into a
+          Query node and its values become available there. Change a value once and{" "}
+          <strong>every connected query picks it up</strong>, so re-running an entire analysis with
+          a new ID or date is a single edit.
         </p>
         <p>
-          Reference a variable in SQL with the @-syntax:
-          <code>{"WHERE created_at > @start_date"}</code>. The variable name must match the node
-          label exactly (case-sensitive).
+          Flip a row into <strong>array</strong> mode with the brackets toggle and it holds a list
+          instead of a single value. Lists expand to a comma-separated sequence at run time, which
+          makes <code>{"WHERE id IN (@ids)"}</code> queries effortless - no hand-assembling values.
         </p>
         <p>
-          Finally, can you have a variable automatically connect to all query nodes on the canvas,
-          as well as any future query node by making the variable node global.
+          Toggle a Variable node <strong>global</strong> and it wires itself to{" "}
+          <strong>every Query node on the canvas - including ones you add later</strong>. It&apos;s
+          the easiest way to set a shared <code>@tenant_id</code> or environment value once and have
+          the whole canvas honor it automatically.
         </p>
         <Image
-          className={nodeStyles.nodeImage}
+          className={styles.fullImage}
           src='/tools/variables.png'
-          alt='Variables node'
+          alt='Variable node'
           width={1168}
           height={657}
         />
@@ -144,7 +150,7 @@ export default function NodesPage() {
           move with the canvas like any other node.
         </p>
         <Image
-          className={nodeStyles.nodeImage}
+          className={styles.fullImage}
           src='/tools/draw.png'
           alt='Draw node'
           width={1168}
@@ -162,7 +168,7 @@ export default function NodesPage() {
           human context.
         </p>
         <Image
-          className={nodeStyles.nodeImage}
+          className={styles.fullImage}
           src='/tools/text.png'
           alt='Text node'
           width={1168}

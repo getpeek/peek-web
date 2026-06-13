@@ -1,37 +1,28 @@
-"use client";
+import type { SubpageNavItem } from "@/components/SubpageNav/SubpageNav";
+import { SubpageNav } from "@/components/SubpageNav/SubpageNav";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import styles from "./FeaturesNav.module.css";
-
-const FEATURES_ROOT = "/features";
-
-const navItems = [
+const navTree: SubpageNavItem[] = [
   { label: "Command Palette", slug: "command-palette" },
   { label: "Multiplayer", slug: "multiplayer" },
   { label: "AI Agents", slug: "ai-agents" },
   { label: "Editing Data", slug: "editing-data" },
   { label: "Import / Export", slug: "import-export" },
-  { label: "Variables", slug: "variables" },
   { label: "Themes", slug: "themes" },
+  {
+    label: "Nodes",
+    slug: "nodes",
+    children: [
+      { label: "Query", slug: "query" },
+      { label: "Result", slug: "result" },
+      { label: "Agent", slug: "agent" },
+      { label: "Chart", slug: "chart" },
+      { label: "Variable", slug: "variable" },
+      { label: "Text", slug: "text" },
+      { label: "Draw", slug: "draw" },
+    ],
+  },
 ];
 
 export function FeaturesNav() {
-  const pathname = usePathname();
-
-  return (
-    <nav aria-label='Features' className={styles.nav}>
-      {navItems.map(item => {
-        const href = `${FEATURES_ROOT}/${item.slug}`;
-        const className = [styles.link, pathname === href && styles.active]
-          .filter(Boolean)
-          .join(" ");
-        return (
-          <Link key={item.slug} className={className} href={href}>
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  return <SubpageNav tree={navTree} root='/features' ariaLabel='Features' />;
 }

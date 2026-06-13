@@ -11,8 +11,8 @@ export default function CommandPalettePage() {
     <>
       <h1 className={styles.title}>Command Palette</h1>
       <p className={styles.lede}>
-        Every action in Peek - one keystroke away. Summon nodes, run queries, and jump anywhere on
-        the canvas without leaving the keyboard.
+        Almost every action in Peek can be reached from the command palette. Jump to nodes, pages or
+        connections, re-run queries, export data or change the theme.
       </p>
 
       <Image

@@ -1,25 +1,8 @@
-export type DocsNavItem = {
-  label: string;
-  slug: string;
-  children?: DocsNavItem[];
-};
+import type { SubpageNavItem } from "@/components/SubpageNav/SubpageNav";
 
-export const navTree: DocsNavItem[] = [
+export const navTree: SubpageNavItem[] = [
   { label: "Installation", slug: "installation" },
   { label: "Getting started", slug: "getting-started" },
-  {
-    label: "Nodes",
-    slug: "nodes",
-    children: [
-      { label: "Query", slug: "query" },
-      { label: "Result", slug: "result" },
-      { label: "Agent", slug: "agent-node" },
-      { label: "Chart", slug: "chart" },
-      { label: "Variable", slug: "variable" },
-      { label: "Text", slug: "text" },
-      { label: "Draw", slug: "draw" },
-    ],
-  },
   {
     label: "Configuration",
     slug: "configuration",
