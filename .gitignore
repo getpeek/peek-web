@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated wasm guest client (rebuild with `yarn build:wasm`)
+/public/peek-join

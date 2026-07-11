@@ -1,0 +1,299 @@
+import { useAtomValue } from "jotai";
+import { memo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { schemaAtom, type DatabaseResult } from "../../../state";
+import { CellContextMenu } from "./CellContextMenu";
+import { DeleteConfirmModal } from "./edit/DeleteConfirmModal";
+import { ResultEmpty } from "./ResultEmpty";
+import { SpacerRow } from "./SpacerRow";
+import type { SearchMatches } from "./hooks/useResultSearchMatches";
+import { ResultHeaderMenu, type HeaderMenuState } from "./ResultHeaderMenu";
+import { ResultTableHeader } from "./ResultTableHeader";
+import { ResultTableRow } from "./ResultTableRow";
+import { useCellContextMenu } from "./hooks/useCellContextMenu";
+import { useColumnActions } from "./hooks/useColumnActions";
+import { useColumnWidths } from "./hooks/useColumnWidths";
+import { useResultEditing } from "./hooks/useResultEditing";
+import type { QueryInfo } from "./queryInfo";
+import type { ExportFormat } from "./export/serializeRows";
+import { useResultSelections } from "./hooks/useResultSelections";
+import { useGhostSelection } from "./hooks/useGhostSelection";
+import type { CellRect } from "./hooks/useCellSelection";
+import { useSelectionCopy } from "./hooks/useSelectionCopy";
+import { useClearOnBlankClick } from "./hooks/useClearOnBlankClick";
+import { useRowActions } from "./hooks/useRowActions";
+import { useSelectionSummary } from "./hooks/useSelectionSummary";
+import { useFollowReferences } from "./hooks/useFollowReferences";
+import { useColumnReferences } from "./hooks/useColumnReferences";
+import { getEditableTableName } from "./cell/inlineEdit";
+import { useDuplicateRows } from "../ResultInsertForm/useInsertFormSpawn";
+
+// Rows are variable height: cells wrap and JSON cells render their full pretty-printed
+// value, so each row is measured via the virtualizer's `measureElement`. ROW_HEIGHT is
+// only the pre-measurement estimate.
+const ROW_HEIGHT = 34;
+
+const SCROLL_CONTAINER_STYLE = {
+  height: "100%",
+  width: "100%",
+  overflow: "auto",
+  position: "relative",
+  background: "var(--pk-node-bg)",
+} as React.CSSProperties;
+
+export const ResultTable = memo(function ResultTable({
+  nodeId,
+  data,
+  query,
+  queryInfo,
+  columnWidths,
+  matches,
+}: {
+  nodeId: string;
+  data: DatabaseResult;
+  query: string;
+  queryInfo: QueryInfo | null;
+  columnWidths?: Record<string, number>;
+  matches: SearchMatches;
+}) {
+  const { visibleIndices, matchedCols, isSearching } = matches;
+  const schema = useAtomValue(schemaAtom);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [headerMenu, setHeaderMenu] = useState<HeaderMenuState | null>(null);
+  const cellContextMenu = useCellContextMenu(nodeId);
+  const {
+    rows: rowSelection,
+    cells: cellSelection,
+    onRowSelectMouseDown,
+    clearAll: clearSelections,
+  } = useResultSelections(data, visibleIndices);
+  useSelectionSummary({ nodeId, data, visibleIndices, rect: cellSelection.rect });
+  useSelectionCopy({
+    active: cellSelection.rect !== null || rowSelection.selected.size > 0,
+    data,
+    cellGrid: cellSelection.selectedGrid,
+    selectedRows: rowSelection.selected,
+  });
+  const ghost = useGhostSelection({
+    visibleCount: visibleIndices.length,
+    columnCount: data[0]?.length ?? 0,
+    cellRect: cellSelection.rect,
+  });
+
+  const firstRow = data[0] ?? [];
+  const headers = firstRow.map(([key]) => key);
+  const headerTypes = firstRow.map(([, , type]) => type);
+
+  const { widthFor, totalWidth, startResize } = useColumnWidths({
+    data,
+    headers,
+    columnWidths,
+    nodeId,
+    scrollContainerRef,
+  });
+
+  const { editing, setEditing, commitEdit, variableNames } = useResultEditing({
+    data,
+    query,
+    queryInfo,
+    nodeId,
+  });
+  const rowActions = useRowActions({
+    data,
+    query,
+    queryInfo,
+    nodeId,
+    selected: rowSelection.selected,
+    cellGrid: cellSelection.selectedGrid,
+    closeCellMenu: cellContextMenu.closeCellMenu,
+  });
+  const editableTable = getEditableTableName(queryInfo);
+
+  const { inbound, outbound } = useColumnReferences(headers, queryInfo, schema.references);
+
+  const followReferences = useFollowReferences(nodeId);
+
+  const { exportColumn, spawnVariableFromColumn, spawnVariableFromSelection } = useColumnActions({
+    nodeId,
+    data,
+    headers,
+    headerTypes,
+    queryInfo,
+    cellRect: cellSelection.rect,
+    selectedRowIndices: cellSelection.selectedRowIndices,
+    closeCellMenu: cellContextMenu.closeCellMenu,
+  });
+
+  const duplicateRowIndices = useDuplicateRows({
+    resultNodeId: nodeId,
+    data,
+    table: editableTable,
+    closeMenu: cellContextMenu.closeCellMenu,
+  });
+
+  const onContainerMouseDown = useClearOnBlankClick({
+    hasSelection: rowSelection.count > 0 || cellSelection.rect !== null,
+    clear: clearSelections,
+  });
+
+  const rowVirtualizer = useVirtualizer({
+    count: visibleIndices.length,
+    getScrollElement: () => scrollContainerRef.current,
+    overscan: 8,
+    estimateSize: () => ROW_HEIGHT,
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const firstItem = virtualItems[0];
+  const lastItem = virtualItems.at(-1);
+  const paddingTop = firstItem?.start ?? 0;
+  const paddingBottom = lastItem ? rowVirtualizer.getTotalSize() - lastItem.end : 0;
+
+  const closeHeaderMenu = () => setHeaderMenu(null);
+
+  const openHeaderMenu = (e: React.MouseEvent, columnIdx: number, header: string) => {
+    setHeaderMenu({ x: e.clientX, y: e.clientY, columnIdx, header });
+  };
+
+  const onRowAction =
+    (action: (rowIndex: number, format: ExportFormat) => void) => (format: ExportFormat) => {
+      const rowIndex = cellContextMenu.cellMenu?.rowIndex;
+      cellContextMenu.closeCellMenu();
+      if (rowIndex !== undefined) {
+        action(rowIndex, format);
+      }
+    };
+
+  const onSelectionAction = (action: (format: ExportFormat) => void) => (format: ExportFormat) => {
+    cellContextMenu.closeCellMenu();
+    action(format);
+  };
+
+  const noRows = data.length === 0;
+  const noMatches = isSearching && visibleIndices.length === 0;
+  const showEmpty = noRows || noMatches;
+
+  // The scroll container must stay mounted even when empty: useColumnWidths
+  // measures it (and attaches a ResizeObserver) in a one-shot layout effect, so
+  // if the container only appears once rows arrive, the width is never measured
+  // and the table renders too narrow to fill the node.
+  return (
+    <div
+      style={SCROLL_CONTAINER_STYLE}
+      ref={scrollContainerRef}
+      onMouseDown={onContainerMouseDown}
+      onMouseLeave={ghost.onLeave}
+    >
+      {showEmpty ? (
+        <ResultEmpty message={noRows ? "No results" : "No matching rows"} />
+      ) : (
+        <>
+          <table style={{ width: totalWidth, tableLayout: "fixed" }}>
+            <colgroup>
+              {headers.map((header, columnIdx) => (
+                <col key={columnIdx} style={{ width: widthFor(header) }} />
+              ))}
+            </colgroup>
+            <thead>
+              <tr>
+                {headers.map((header, columnIdx) => (
+                  <ResultTableHeader
+                    key={columnIdx}
+                    header={header}
+                    columnIdx={columnIdx}
+                    colType={headerTypes[columnIdx] || ""}
+                    inbound={inbound[header]}
+                    outbound={outbound[header]}
+                    onResizeStart={startResize}
+                    onContextMenu={openHeaderMenu}
+                    onSelectColumn={cellSelection.selectColumn}
+                    onHeaderEnter={ghost.onHeaderEnter}
+                  />
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paddingTop > 0 && <SpacerRow height={paddingTop} colSpan={headers.length} />}
+              {virtualItems.map(virtualRow => {
+                const rowIndex = visibleIndices[virtualRow.index];
+                const edit =
+                  editing && editing.row === rowIndex
+                    ? { editing, commitEdit, variableNames }
+                    : null;
+                // Rows outside a rect get a stable null prop and stay memoized.
+                const clipToRow = (rect: CellRect | null) =>
+                  rect && virtualRow.index >= rect.top && virtualRow.index <= rect.bottom
+                    ? rect
+                    : null;
+                return (
+                  <ResultTableRow
+                    key={virtualRow.key}
+                    ref={rowVirtualizer.measureElement}
+                    virtualIndex={virtualRow.index}
+                    row={data[rowIndex]}
+                    rowIndex={rowIndex}
+                    edit={edit}
+                    setEditing={setEditing}
+                    inbound={inbound}
+                    outbound={outbound}
+                    isSelected={rowSelection.isSelected(rowIndex)}
+                    cellRect={clipToRow(cellSelection.rect)}
+                    ghostRect={clipToRow(ghost.ghostRect)}
+                    rowBandEdges={rowSelection.bandEdges(virtualRow.index)}
+                    matchedCols={matchedCols.get(rowIndex)}
+                    onSelectMouseDown={onRowSelectMouseDown}
+                    onCellSelectMouseDown={cellSelection.onCellMouseDown}
+                    onCellEnter={ghost.onCellEnter}
+                    onFollowReferences={followReferences}
+                    onCellContextMenu={cellContextMenu.openCellMenu}
+                  />
+                );
+              })}
+              {paddingBottom > 0 && <SpacerRow height={paddingBottom} colSpan={headers.length} />}
+            </tbody>
+          </table>
+          <ResultHeaderMenu
+            state={headerMenu}
+            onClose={closeHeaderMenu}
+            onExportColumn={exportColumn}
+            onUseAsVariable={spawnVariableFromColumn}
+          />
+
+          <CellContextMenu
+            cellMenu={cellContextMenu.cellMenu}
+            selected={rowSelection.selected}
+            cellRect={cellSelection.rect}
+            canDuplicate={editableTable !== null}
+            onClose={cellContextMenu.closeCellMenu}
+            onUseAsVariable={cellContextMenu.createVariableFromCell}
+            onCopyValue={cellContextMenu.copyCellValue}
+            onCopyRow={onRowAction(rowActions.copyRow)}
+            onCopySelected={onSelectionAction(rowActions.copySelectedRows)}
+            onExportRow={onRowAction(rowActions.exportSingleRow)}
+            onExportSelected={onSelectionAction(rowActions.exportSelectedRows)}
+            onCopyCellSelection={onSelectionAction(rowActions.copyCellSelection)}
+            onExportCellSelection={onSelectionAction(rowActions.exportCellSelection)}
+            onUseSelectionAsVariable={spawnVariableFromSelection}
+            onDuplicateRow={() => {
+              const rowIndex = cellContextMenu.cellMenu?.rowIndex;
+              if (rowIndex !== undefined) {
+                duplicateRowIndices([rowIndex]);
+              }
+            }}
+            onDuplicateSelected={() => duplicateRowIndices([...rowSelection.selected])}
+            onRequestDelete={rowActions.requestDelete}
+          />
+          <DeleteConfirmModal
+            opened={!!rowActions.deleteConfirm}
+            rowCount={rowActions.deleteConfirm?.rowCount ?? 0}
+            table={rowActions.deleteConfirm?.table || null}
+            saving={rowActions.deleteConfirm?.saving ?? false}
+            error={rowActions.deleteConfirm?.error ?? null}
+            onCancel={rowActions.cancelDelete}
+            onConfirm={rowActions.confirmDelete}
+          />
+        </>
+      )}
+    </div>
+  );
+});

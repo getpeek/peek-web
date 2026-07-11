@@ -1,0 +1,42 @@
+[package]
+name = "peek-join"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+anyhow = "1"
+async-channel = "2.3"
+bytes = { version = "1", features = ["serde"] }
+console_error_panic_hook = "0.1"
+getrandom = { version = "0.3", features = ["wasm_js"] }
+n0-future = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde-wasm-bindgen = "0.6"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber-wasm = "0.1"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+wasm-streams = "0.5"
+
+iroh = { version = "1", default-features = false, features = ["tls-ring"] }
+iroh-docs = { version = "0.101", default-features = false }
+iroh-blobs = { version = "0.103", default-features = false }
+iroh-gossip = { version = "0.101", default-features = false, features = ["net"] }
+
+[profile.release]
+codegen-units = 1
+strip = "symbols"
+lto = true
+opt-level = "z"
+panic = "abort"
+
+# rustc emits bulk-memory/nontrapping-fptoint ops for wasm32 by default now;
+# wasm-pack's bundled wasm-opt rejects them unless told they're allowed.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O", "--enable-bulk-memory", "--enable-nontrapping-float-to-int"]

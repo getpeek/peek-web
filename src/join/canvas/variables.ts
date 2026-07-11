@@ -1,0 +1,122 @@
+import { format, type FormatOptionsWithLanguage } from "sql-formatter";
+import type { CanvasApi } from "./state";
+import type { AppEdge, AppNode, VariableData } from "./types";
+
+export type VariableSite = { name: string; start: number; end: number };
+
+export const VARIABLE_NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*$/u;
+// `@name` only matches when not preceded by a word char, so emails like
+// `users@email.com` are not treated as references to a variable named `email`,
+// while `'@email'` and bare `@email` still substitute.
+const VARIABLE_RE = /(?<!\w)@([A-Za-z_][A-Za-z0-9_]*)/gu;
+
+export function scanVariableSites(query: string): VariableSite[] {
+  const sites: VariableSite[] = [];
+  for (const match of query.matchAll(VARIABLE_RE)) {
+    const start = match.index ?? 0;
+    sites.push({ name: match[1], start, end: start + match[0].length });
+  }
+  return sites;
+}
+
+export function extractVariableRefs(query: string): string[] {
+  const seen = new Set<string>();
+  for (const site of scanVariableSites(query)) {
+    seen.add(site.name);
+  }
+  return Array.from(seen);
+}
+
+export type VariableValue = string | string[];
+
+export function substituteVariables(
+  query: string,
+  vars: Record<string, VariableValue>,
+): { resolved: string; missing: string[] } {
+  const sites = scanVariableSites(query);
+  const missingSet = new Set<string>();
+  let out = "";
+  let cursor = 0;
+  for (const site of sites) {
+    out += query.slice(cursor, site.start);
+    if (Object.prototype.hasOwnProperty.call(vars, site.name)) {
+      const value = vars[site.name];
+      out += Array.isArray(value) ? value.join(", ") : value;
+    } else {
+      missingSet.add(site.name);
+      out += query.slice(site.start, site.end);
+    }
+    cursor = site.end;
+  }
+  out += query.slice(cursor);
+  return { resolved: out, missing: Array.from(missingSet) };
+}
+
+export function collectVariablesFromGraph(
+  nodes: AppNode[],
+  edges: AppEdge[],
+  targetId: string,
+): Record<string, VariableValue> {
+  const incoming = edges
+    .filter(e => e.target === targetId)
+    .slice()
+    .toSorted((a, b) => a.id.localeCompare(b.id));
+
+  const merged: Record<string, VariableValue> = {};
+  for (const edge of incoming) {
+    const source = nodes.find(n => n.id === edge.source);
+    if (!source || source.type !== "variable") {
+      continue;
+    }
+    for (const row of (source.data as VariableData).rows) {
+      if (!row.name) {
+        continue;
+      }
+      merged[row.name] = row.value;
+    }
+  }
+  return merged;
+}
+
+export function collectVariablesFor(
+  canvas: CanvasApi,
+  queryNodeId: string,
+): Record<string, VariableValue> {
+  return collectVariablesFromGraph(canvas.getNodes(), canvas.getEdges(), queryNodeId);
+}
+
+export function formatPreservingVars(query: string, options: FormatOptionsWithLanguage): string {
+  const sites = scanVariableSites(query);
+  if (sites.length === 0) {
+    return format(query, options);
+  }
+
+  const placeholderFor = new Map<string, string>();
+  let next = 0;
+  for (const site of sites) {
+    if (!placeholderFor.has(site.name)) {
+      placeholderFor.set(site.name, `__pkvar_${next++}__`);
+    }
+  }
+
+  let swapped = "";
+  let cursor = 0;
+  for (const site of sites) {
+    swapped += query.slice(cursor, site.start);
+    swapped += placeholderFor.get(site.name)!;
+    cursor = site.end;
+  }
+  swapped += query.slice(cursor);
+
+  let formatted: string;
+  try {
+    formatted = format(swapped, options);
+  } catch {
+    return query;
+  }
+
+  for (const [name, placeholder] of placeholderFor) {
+    formatted = formatted.split(placeholder).join(`@${name}`);
+  }
+  return formatted;
+}

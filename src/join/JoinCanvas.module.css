@@ -1,0 +1,41 @@
+.canvas {
+  position: absolute;
+  inset: 0;
+  background: var(--pk-bg);
+}
+
+.tabs {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  box-shadow: var(--pk-node-shadow-cheap);
+}
+
+.tab,
+.tabActive {
+  border: none;
+  background: transparent;
+  color: var(--pk-fg-muted);
+  padding: 4px 12px;
+  border-radius: var(--pk-radius-pill);
+  font-size: 12px;
+  font-family: var(--pk-font-sans);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--pk-fg);
+  }
+}
+
+.tabActive {
+  background: var(--pk-accent-bg);
+  color: var(--pk-fg);
+}

@@ -1,0 +1,30 @@
+/* Base document styles for the join group — the pieces the desktop app gets
+ * from theme.css/App.css that aren't part of the copied canvas CSS. Theme
+ * tokens themselves come from the verbatim desktop files (midnight.css,
+ * node.css). */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--pk-bg);
+  color: var(--pk-fg);
+  font-family: var(--pk-font-sans);
+}
+
+/* Web font mapping: declarations on body beat node.css's :root for every
+ * descendant, so the copied token files stay verbatim. */
+body {
+  --pk-font-sans:
+    var(--font-jetbrains-mono), "Monaspace Krypton", ui-monospace, "SF Mono", monospace;
+  --pk-font-mono:
+    var(--font-jetbrains-mono), "Monaspace Krypton", ui-monospace, "SF Mono", monospace;
+  --pk-font-playful: var(--font-chewy), cursive;
+}

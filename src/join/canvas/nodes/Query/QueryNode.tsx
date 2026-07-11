@@ -1,0 +1,251 @@
+import { NodeProps, NodeResizer } from "@xyflow/react";
+import {
+  IconAlertTriangle,
+  IconIndentIncrease,
+  IconLoader2,
+  IconPlayerPlay,
+} from "@tabler/icons-react";
+import { useEffect, useRef, useState } from "react";
+import { useAtomValue } from "jotai";
+import type { editor as MonacoEditor } from "monaco-editor";
+import { SqlEditor } from "./Editor/SqlEditor";
+import { useCanvas } from "../../hooks/useCanvas";
+import { useExecuteQueries } from "../../hooks/useExecuteQueries";
+import { useGetVariables } from "./useGetVariables";
+import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
+import { HiddenHandles } from "../HiddenHandles";
+import { NodeHeader } from "../NodeHeader";
+import { NodeIndicator } from "../NodeIndicator";
+import { sessionStateAtom } from "../../../multiplayer/state";
+import { formatPreservingVars } from "../../variables";
+import type { QueryNode as QueryNodeT } from "../../types";
+import { registerEditorFocus } from "../editorFocusRegistry";
+import { isUnboundedWrite } from "./isUnboundedWrite";
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
+import "./Query.css";
+
+const DEFAULT_W = 420;
+const DEFAULT_H = 320;
+const LIVE_POLL_MS = 10_000;
+
+function nodeHeading(query: string): string {
+  return query
+    .replace(/^--\s*/u, "")
+    .split("\n")
+    .map(l => l.trim())
+    .join(" ")
+    .slice(0, 60);
+}
+
+function isSelectOnly(query: string): boolean {
+  return query.trim().toLowerCase().startsWith("select");
+}
+
+export function QueryNode({ id, data, selected, width, height }: NodeProps<QueryNodeT>) {
+  const canvas = useCanvas();
+  const executeQueries = useExecuteQueries();
+  const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
+  const editorFocusedRef = useRef(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [editorReady, setEditorReady] = useState(false);
+  const [confirmingUnbounded, setConfirmingUnbounded] = useState(false);
+  useScrollFallthrough(bodyRef);
+  const session = useAtomValue(sessionStateAtom);
+  const variables = useGetVariables(id);
+  const w = width ?? DEFAULT_W;
+  const h = height ?? DEFAULT_H;
+  const isRunning = data.isRunning ?? false;
+
+  useEffect(() => {
+    if (!editorReady) {
+      return;
+    }
+    return registerEditorFocus(id, () => editorRef.current?.focus());
+  }, [id, editorReady]);
+
+  useEffect(() => {
+    if (selected || !editorRef.current?.hasTextFocus()) {
+      return;
+    }
+    const textarea = editorRef.current.getDomNode()?.querySelector("textarea");
+    if (textarea instanceof HTMLElement) {
+      textarea.blur();
+    }
+  }, [selected]);
+
+  const runQuery = () => {
+    const node = canvas.getNode(id);
+    if (!node || node.type !== "query") {
+      return;
+    }
+    const queryData = node.data as QueryNodeT["data"];
+    if (queryData.isRunning) {
+      return;
+    }
+    if (!confirmingUnbounded && isUnboundedWrite(queryData.query)) {
+      setConfirmingUnbounded(true);
+      return;
+    }
+    setConfirmingUnbounded(false);
+    executeQueries(node, [queryData.query]);
+  };
+
+  const isLive = (data.liveIntervalMs ?? null) !== null;
+
+  const toggleLive = () => {
+    canvas.updateNodeData<QueryNodeT["data"]>(id, {
+      liveIntervalMs: isLive ? null : LIVE_POLL_MS,
+    });
+  };
+
+  // Capture the latest tick implementation in a ref so the polling effect
+  // below only re-runs when `liveIntervalMs` changes. Including `canvas` /
+  // `executeQueries` / `session` directly in the deps caused the effect to
+  // tear down on every re-render (executeQueries is a fresh closure each
+  // render), firing tick() immediately each time `isRunning` flipped — which
+  // made queries run back-to-back instead of every `liveIntervalMs`.
+  const tickRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    tickRef.current = () => {
+      if (editorFocusedRef.current) {
+        return;
+      }
+      // Only the host runs the query executor in a session; joiners observe
+      // streamed results.
+      if (session?.role === "joiner") {
+        return;
+      }
+      const node = canvas.getNode(id);
+      if (!node || node.type !== "query") {
+        return;
+      }
+      const queryData = node.data as QueryNodeT["data"];
+      if (queryData.isRunning) {
+        return;
+      }
+      if (!isSelectOnly(queryData.query)) {
+        return;
+      }
+      executeQueries(node, [queryData.query]);
+    };
+  });
+
+  useEffect(() => {
+    const interval = data.liveIntervalMs;
+    if (interval === null || interval === undefined) {
+      return;
+    }
+    const tick = () => tickRef.current();
+    tick();
+    const handle = window.setInterval(tick, interval);
+    return () => window.clearInterval(handle);
+  }, [data.liveIntervalMs]);
+
+  const formatQuery = () => {
+    const node = canvas.getNode(id);
+    if (!node || node.type !== "query") {
+      return;
+    }
+    const current = (node.data as QueryNodeT["data"]).query;
+    try {
+      const formatted = formatPreservingVars(current, {
+        keywordCase: "upper",
+        functionCase: "upper",
+        language: "postgresql",
+      });
+      canvas.updateNodeData<QueryNodeT["data"]>(id, { query: formatted });
+    } catch {}
+  };
+
+  return (
+    <>
+      <NodeResizer isVisible={!!selected} minWidth={320} minHeight={200} />
+      <HiddenHandles connectableTarget />
+      <div
+        className={`app-node ${selected ? "selected" : ""} ${isLive ? "is-live" : ""}`}
+        style={{ width: w, height: h }}
+      >
+        <NodeHeader
+          nodeId={id}
+          name={nodeHeading(data.query) || "untitled.sql"}
+          indicator={<NodeIndicator kind='query' />}
+        >
+          <Tooltip label={isLive ? "Stop live polling" : "Poll every 10s"}>
+            <button
+              className={`header-icon-btn ${isLive ? "is-live" : ""}`}
+              onClick={e => {
+                e.stopPropagation();
+                toggleLive();
+              }}
+            >
+              <span className='live-dot' />
+            </button>
+          </Tooltip>
+        </NodeHeader>
+        <div className='app-node-body nodrag' ref={bodyRef}>
+          <SqlEditor
+            query={data.query}
+            variables={variables}
+            onMount={(editor, monaco) => {
+              editorRef.current = editor;
+              setEditorReady(true);
+              editor.onDidDispose(() => {
+                editorRef.current = null;
+                setEditorReady(false);
+              });
+              editor.onDidFocusEditorWidget(() => {
+                editorFocusedRef.current = true;
+              });
+              editor.onDidBlurEditorWidget(() => {
+                editorFocusedRef.current = false;
+              });
+              editor.onKeyDown(e => {
+                const isMod = e.metaKey || e.ctrlKey;
+                if (isMod && e.keyCode === monaco.KeyCode.Enter) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  runQuery();
+                }
+                if (isMod && e.keyCode === monaco.KeyCode.KeyS) {
+                  formatQuery();
+                }
+              });
+            }}
+            onQueryChange={query => {
+              setConfirmingUnbounded(false);
+              canvas.updateNodeData<QueryNodeT["data"]>(id, { query });
+            }}
+          />
+        </div>
+        <div className='app-node-footer nodrag'>
+          <Tooltip label='Format query (⌘⇧I)'>
+            <button className='btn btn-ghost' onClick={formatQuery}>
+              <IconIndentIncrease size={13} />
+              Format
+            </button>
+          </Tooltip>
+          {confirmingUnbounded && !isRunning ? (
+            <Tooltip label='Do you want to run this unbounded delete operation?'>
+              <button className='btn btn-danger' onClick={runQuery}>
+                <IconAlertTriangle size={13} />
+                Run unbounded
+              </button>
+            </Tooltip>
+          ) : (
+            <Tooltip label='Run query (⌘↵)'>
+              <button className='btn' onClick={runQuery} disabled={isRunning}>
+                {isRunning ? (
+                  <IconLoader2 size={13} className='btn-spinner' />
+                ) : (
+                  <IconPlayerPlay size={13} />
+                )}
+                {isRunning ? "Running…" : "Run"}
+                <span className='kbd'>⌘↵</span>
+              </button>
+            </Tooltip>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

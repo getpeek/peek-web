@@ -1,0 +1,59 @@
+/* Structural base for the Menu subset — visuals come from the caller-supplied
+ * classNames (see Result.css `.column-menu-*`). */
+
+.pk-menu-dropdown {
+  position: fixed;
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  padding: 4px;
+}
+
+.pk-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--pk-fg);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.pk-menu-item-section {
+  display: inline-flex;
+  align-items: center;
+}
+
+.pk-menu-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pk-menu-sub-chevron {
+  color: var(--pk-fg-muted);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.pk-menu-label {
+  font-size: 11px;
+  color: var(--pk-fg-subtle);
+}
+
+.pk-menu-divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--pk-node-border);
+}

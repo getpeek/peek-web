@@ -1,0 +1,680 @@
+@import "./theme/swatches.css";
+
+/* ============================================================
+   Static tokens — shared across all themes
+   ============================================================ */
+:root {
+  --pk-radius-node: 10px;
+  --pk-radius-card: 10px;
+  --pk-radius-pill: 999px;
+  /* Matches CORNER_RADIUS in src-tauri/src/window_chrome.rs — the native squircle the
+     webview is clipped to. The window-edge border (WindowBorder) follows it. */
+  --pk-radius-window: 16px;
+
+  --pk-font-sans: "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --pk-font-mono: "Monaspace Krypton", "SF Mono", ui-monospace, Menlo, monospace;
+  --pk-font-playful: "Chewy";
+}
+
+/* ============================================================
+   xyflow overrides
+   ============================================================ */
+.react-flow {
+  color: var(--pk-fg);
+  font-family: var(--pk-font-sans);
+  --xy-background-color-default: transparent;
+  --xy-background-pattern-color-default: var(--pk-bg-grid);
+  --xy-edge-stroke-default: var(--pk-node-border-strong);
+  --xy-edge-stroke-selected-default: var(--pk-accent);
+  --xy-controls-bg-default: var(--pk-node-bg);
+  --xy-controls-bg-hover-default: var(--pk-node-bg-2);
+  --xy-controls-color-default: var(--pk-fg-muted);
+  --xy-controls-border-default: var(--pk-node-border);
+  --xy-selection-background-color-default: var(--pk-accent-bg);
+  --xy-selection-border-default: 1px dashed var(--pk-accent);
+  --xy-attribution-background-color-default: transparent;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+/* Resting edges are muted — dimmed with a soft single-pass glow — so they read
+   as quiet background structure. The active states below (selected connection,
+   flowing, live) restore full opacity and a stronger glow to stand out. */
+.react-flow__edge-path {
+  stroke: var(--pk-edge-color, var(--pk-node-border-strong));
+  stroke-width: 2.6;
+  fill: none;
+  opacity: 0.7;
+  /* No `filter: drop-shadow` — a filter forces a dedicated compositing layer per
+     edge, so on a multi-node canvas the layer count explodes and dragging chokes
+     the compositor. Edges are conveyed by stroke colour/width/opacity instead. */
+}
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:focus .react-flow__edge-path {
+  stroke: var(--pk-edge-color, var(--pk-accent));
+  opacity: 1;
+}
+
+/* xyflow's node wrapper: transparent so .app-node owns the visible card.
+   --pk-node-type-color drives the selection ring; the default resolves to the
+   accent and each react-flow__node-<type> override (below) tints it by kind. */
+.react-flow__node {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  --pk-node-type-color: var(--pk-accent);
+}
+
+.react-flow__node-query {
+  --pk-node-type-color: var(--pk-type-query);
+}
+.react-flow__node-result {
+  --pk-node-type-color: var(--pk-type-result);
+}
+.react-flow__node-result-insert-form {
+  --pk-node-type-color: var(--pk-type-result);
+}
+.react-flow__node-agent {
+  --pk-node-type-color: var(--pk-type-agent);
+}
+.react-flow__node-barchart {
+  --pk-node-type-color: var(--pk-type-chart);
+}
+.react-flow__node-query-error {
+  --pk-node-type-color: var(--pk-type-error);
+}
+.react-flow__node-variable {
+  --pk-node-type-color: var(--pk-type-variable);
+}
+
+/* ============================================================
+   Node base
+   ============================================================ */
+.app-node {
+  background: var(--pk-node-bg) !important;
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-node);
+  box-shadow: var(--pk-node-shadow);
+  transition:
+    border-color 0.12s ease-out,
+    box-shadow 0.12s ease-out;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: var(--pk-fg);
+  font-family: var(--pk-font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* The ring counter-scales by --pk-zoom (mirrored from the viewport by
+   useZoomVariable) so its width, gap, and glow stay constant on screen instead
+   of scaling with zoom — matching how a native selection indicator behaves. */
+.app-node.selected {
+  outline: calc(1.5px / var(--pk-zoom, 1)) solid var(--pk-node-type-color);
+  outline-offset: calc(3px / var(--pk-zoom, 1));
+}
+
+.react-flow__node.connected .app-node {
+  border-color: color-mix(in oklab, var(--pk-accent) 55%, var(--pk-node-border));
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--pk-accent) 35%, transparent),
+    0 8px 20px oklch(0% 0 0 / 0.35);
+}
+
+/* Entry animation: `node-entering` is a render-time decoration injected by
+   useNodeEntryAnimation for ids genuinely new to the page since load — the
+   class is stripped after ~1.1s so onlyRenderVisibleElements remounts on
+   pan-into-view don't replay it. The glow ring counter-scales by --pk-zoom
+   (like the selection ring above) so it reads identically at any zoom, and its
+   100% keyframe equals the resting node shadow so class removal causes no
+   visual jump. */
+.react-flow__node.node-entering .app-node {
+  animation:
+    pk-node-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    pk-glow-pop 0.9s ease-out 0.12s;
+}
+
+@keyframes pk-node-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pk-glow-pop {
+  0% {
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 0 transparent;
+  }
+  40% {
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 calc(8px / var(--pk-zoom, 1))
+        color-mix(in oklab, var(--pk-node-type-color) 30%, transparent),
+      0 0 calc(40px / var(--pk-zoom, 1)) calc(4px / var(--pk-zoom, 1))
+        color-mix(in oklab, var(--pk-node-type-color) 40%, transparent);
+  }
+  100% {
+    box-shadow:
+      var(--pk-node-shadow),
+      0 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .react-flow__node.node-entering .app-node {
+    /* Opacity-only: keeps the "new node" signal (useful for remote inserts)
+       without motion or glow. */
+    animation: pk-node-fade-in 0.15s ease-out both;
+  }
+}
+
+@keyframes pk-node-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Full-node drop target (HiddenHandles): inert at rest so it never eats clicks
+   on the body, but during a connection drag it captures pointer events and sits
+   above the node's own handles — so the handle under the cursor is always this,
+   letting the edge land anywhere on the node instead of only on a side handle. */
+.node-drop-target {
+  pointer-events: none;
+}
+.connecting .node-drop-target {
+  pointer-events: all;
+  z-index: 10;
+}
+
+/* The moment a connection starts, give its eligible targets a soft border cue
+   so it's clear where the edge can land. */
+.connecting-from-variable .react-flow__node-query .app-node,
+.connecting-from-variable .react-flow__node-result .app-node,
+.connecting-from-variable .react-flow__node-result-insert-form .app-node,
+.connecting-from-result .react-flow__node-agent .app-node {
+  border-color: color-mix(in oklab, var(--pk-node-type-color) 55%, var(--pk-node-border));
+}
+
+/* The node the cursor is currently over (and can drop on) gets the full accent
+   ring — the "release here" affordance. xyflow tags the drop-target handle
+   .connectingto.valid while a valid connection hovers it. */
+.react-flow__node:has(.node-drop-target.connectingto.valid) .app-node {
+  border-color: var(--pk-node-type-color);
+  box-shadow:
+    0 0 0 2px var(--pk-node-type-color),
+    0 0 16px color-mix(in oklab, var(--pk-node-type-color) 30%, transparent);
+}
+
+/* While Cmd is held, the whole node is a drag surface (see useMetaKeyHeld),
+   so surface the grab affordance everywhere instead of only on the header. */
+.drag-anywhere .react-flow__node,
+.drag-anywhere .react-flow__node .app-node {
+  cursor: grab;
+}
+
+/* ============================================================
+   Node header (type dot + label + name + pin/close)
+   ============================================================ */
+.app-node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pk-fg);
+  user-select: none;
+  cursor: grab;
+  flex-shrink: 0;
+  min-height: 36px;
+}
+
+.node-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.node-indicator .type-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pk-accent);
+  flex-shrink: 0;
+}
+
+.type-query .type-dot {
+  background: var(--pk-type-query);
+}
+.type-result .type-dot,
+.type-result-insert-form .type-dot {
+  background: var(--pk-type-result);
+}
+.type-agent .type-dot {
+  background: var(--pk-type-agent);
+}
+.type-barchart .type-dot {
+  background: var(--pk-type-chart);
+}
+.type-query-error .type-dot {
+  background: var(--pk-type-error);
+}
+.type-variable .type-dot {
+  background: var(--pk-type-variable);
+}
+.type-text .type-dot {
+  background: var(--pk-fg-muted);
+}
+
+.node-indicator .type-label {
+  font: 500 12px var(--pk-font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pk-fg);
+}
+
+.app-node-header .node-name {
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.header-icon-btn {
+  background: transparent;
+  border: 0;
+  color: var(--pk-fg-subtle);
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.1s;
+}
+
+.header-icon-btn:hover {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+/* Body */
+.app-node-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--pk-node-bg);
+  position: relative;
+}
+
+/* Footer (inline action area) */
+.app-node-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg);
+  flex-shrink: 0;
+}
+
+.app-node-footer .meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-fg-muted);
+}
+
+.app-node-footer .ok {
+  color: var(--pk-green);
+}
+
+/* Sub-toolbar (inside body, at top) */
+.app-node-subtoolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg);
+  font: 400 11.5px var(--pk-font-mono);
+  color: var(--pk-fg-muted);
+  flex-shrink: 0;
+}
+
+.app-node-subtoolbar .meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-node-subtoolbar .meta .ok {
+  color: var(--pk-green);
+}
+.app-node-subtoolbar .actions {
+  display: flex;
+  gap: 2px;
+}
+.app-node-subtoolbar .icon-btn {
+  background: transparent;
+  border: 0;
+  color: var(--pk-fg-subtle);
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.app-node-subtoolbar .icon-btn:hover {
+  color: var(--pk-accent);
+  background: var(--pk-node-bg-2);
+}
+.app-node-subtoolbar .icon-btn.is-active {
+  color: var(--pk-accent);
+  background: var(--pk-accent-bg);
+}
+
+/* Buttons */
+.btn {
+  border: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font: 500 12px var(--pk-font-sans);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--pk-node-border);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  border-color: var(--pk-red);
+  background: var(--pk-red-soft);
+  color: var(--pk-red);
+  animation: btn-pulse 1.2s ease-in-out infinite;
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--pk-red);
+  color: var(--pk-node-bg);
+}
+
+@keyframes btn-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--pk-red-soft);
+  }
+  50% {
+    box-shadow: 0 0 0 4px var(--pk-red-soft);
+  }
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--pk-fg-muted);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.btn .kbd {
+  font: 500 10px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  background: transparent;
+  border: 1px solid var(--pk-node-border);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.btn-spinner {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: btn-spin 0.8s linear infinite;
+}
+
+@keyframes btn-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Inputs inside nodes */
+.app-node textarea,
+.app-node input[type="text"] {
+  font-family: var(--pk-font-sans);
+  font-size: 13px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--pk-fg);
+  width: 100%;
+  resize: none;
+  line-height: 1.55;
+}
+.app-node textarea::placeholder,
+.app-node input[type="text"]::placeholder {
+  color: var(--pk-fg-subtle);
+}
+
+/* Param chips */
+.param-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--pk-accent-bg);
+  border: 1px solid var(--pk-accent-line);
+  color: var(--pk-accent-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font: 500 10.5px var(--pk-font-mono);
+}
+
+/* Hidden xyflow handles */
+.handle-hidden {
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+/* Column type tags (PK / FK) — shared by Result and TableDefinition tables */
+.col-tag {
+  font: 500 9px var(--pk-font-mono);
+  padding: 1px 4px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+}
+.col-tag.pk {
+  color: var(--pk-yellow);
+  background: var(--pk-yellow-soft);
+}
+.col-tag.fk {
+  color: var(--pk-blue);
+  background: var(--pk-blue-soft);
+}
+
+/* ============================================================
+   Edge animation
+   ============================================================ */
+.react-flow__edge.flowing .react-flow__edge-path {
+  stroke: var(--pk-edge-color, var(--pk-accent));
+  stroke-dasharray: 4 6;
+  opacity: 1;
+  animation: pk-flow 1.4s linear infinite;
+}
+@keyframes pk-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.react-flow__edge.query-live .react-flow__edge-path {
+  stroke: var(--pk-edge-color, var(--pk-accent));
+  stroke-width: 2.6;
+  stroke-dasharray: 4 6;
+  opacity: 1;
+  animation: pk-flow 1.4s linear infinite;
+}
+
+.live-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pk-fg-muted);
+  border: 1px solid var(--pk-node-border-strong, var(--pk-node-border));
+  display: inline-block;
+  flex-shrink: 0;
+}
+.is-live .live-dot {
+  background: var(--pk-accent);
+  border-color: var(--pk-accent);
+}
+/* Expanding ring on a pseudo-element — animates only transform + opacity, so
+   it stays on the compositor and doesn't repaint the node every frame the way
+   the old box-shadow pulse did. */
+.is-live .live-dot::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  background: var(--pk-accent);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: pk-live-pulse 1.2s ease-in-out infinite;
+}
+@keyframes pk-live-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Edges touching a selected node (tagged by useSelectionHighlight): brighter
+   and thicker so the selection's connections pop. --pk-edge-bright lightens the
+   inline --pk-edge-color toward white; defined here (a fresh name) since the
+   stylesheet can't override the inline custom property itself. */
+.react-flow__edge.connection-active .react-flow__edge-path {
+  --pk-edge-bright: color-mix(in oklab, var(--pk-edge-color, var(--pk-accent)), white 38%);
+  stroke: var(--pk-edge-bright);
+  stroke-width: 3.4;
+  opacity: 1;
+  /* Emphasis via brighter + thicker stroke only — no `filter` (it would force a
+     compositing layer per highlighted edge). */
+}
+
+/* Resize handles (xyflow NodeResizer) */
+.react-flow__resize-control.handle {
+  background: transparent;
+  border: none;
+  width: 13px;
+  height: 13px;
+}
+/* Push each handle outward from the corner so the bracket wraps just past the
+   node edge, roughly on the selection ring. xyflow keeps the handle a constant
+   screen size via an inline `scale: 1/zoom` transform, but margin is layout —
+   it lands in scaled-viewport space and would render as `4px * zoom`. Divide by
+   --pk-zoom so the gap stays a fixed on-screen distance at any zoom level. */
+.react-flow__resize-control.handle.top {
+  margin-top: calc(-4px / var(--pk-zoom, 1));
+}
+.react-flow__resize-control.handle.bottom {
+  margin-top: calc(4px / var(--pk-zoom, 1));
+}
+.react-flow__resize-control.handle.left {
+  margin-left: calc(-4px / var(--pk-zoom, 1));
+}
+.react-flow__resize-control.handle.right {
+  margin-left: calc(4px / var(--pk-zoom, 1));
+}
+
+/* Corner-bracket handles: two adjacent borders + a rounded outer corner, so
+   each reads as the rounded corner of the node it grabs (└ bottom-left,
+   ┘ bottom-right, etc.) rather than a square dot. */
+.react-flow__node.selected .react-flow__resize-control.handle {
+  background: transparent;
+  border: 2px solid var(--pk-node-type-color);
+}
+.react-flow__node.selected .react-flow__resize-control.handle.top.left {
+  border-right: none;
+  border-bottom: none;
+  border-top-left-radius: 9px;
+}
+.react-flow__node.selected .react-flow__resize-control.handle.top.right {
+  border-left: none;
+  border-bottom: none;
+  border-top-right-radius: 9px;
+}
+.react-flow__node.selected .react-flow__resize-control.handle.bottom.left {
+  border-right: none;
+  border-top: none;
+  border-bottom-left-radius: 9px;
+}
+.react-flow__node.selected .react-flow__resize-control.handle.bottom.right {
+  border-left: none;
+  border-top: none;
+  border-bottom-right-radius: 9px;
+}
+
+/* The resizer's edge lines would draw a second rectangle right on the node
+   border — hide them so only our offset ring reads as the selection. */
+.react-flow__resize-control.line {
+  border-color: transparent;
+}

@@ -1,0 +1,683 @@
+.app-node table {
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  & thead th {
+    position: sticky;
+    top: 0;
+    background: var(--pk-node-bg) !important;
+    color: var(--pk-fg-muted) !important;
+    font-weight: 500;
+    font-size: 11px !important;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid var(--pk-node-border) !important;
+    padding: 9px 14px !important;
+    text-align: left;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  & tbody td {
+    padding: 7px 14px !important;
+    color: var(--pk-fg);
+    border-bottom: 1px solid var(--pk-node-border) !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: cell;
+  }
+}
+
+.col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  z-index: 2;
+
+  &:hover,
+  &:active {
+    background: var(--pk-node-border);
+  }
+}
+
+.app-node table {
+  & tbody tr:hover td {
+    background: var(--pk-node-bg-2);
+  }
+
+  & tbody tr.selected td,
+  & tbody tr.selected td.pk,
+  & tbody tr.selected td.fk {
+    background: var(--pk-row-selected-bg);
+  }
+
+  & tbody tr.selected:hover td,
+  & tbody tr.selected:hover td.pk,
+  & tbody tr.selected:hover td.fk {
+    background: var(--pk-row-selected-bg-hover);
+  }
+
+  & thead th.pk .col-name {
+    color: var(--pk-yellow);
+  }
+  & thead th.fk .col-name {
+    color: var(--pk-blue);
+  }
+
+  & tbody td.pk {
+    color: var(--pk-yellow) !important;
+  }
+  & tbody td.fk {
+    color: var(--pk-blue) !important;
+  }
+
+  & tbody td.pk .reference {
+    --chip-color: var(--pk-yellow);
+    background: color-mix(in oklch, var(--chip-color) 8%, transparent);
+    border-color: color-mix(in oklch, var(--chip-color) 20%, transparent);
+  }
+  & tbody td.fk .reference {
+    --chip-color: var(--pk-blue);
+  }
+
+  & tbody td.pk .reference--link:hover,
+  & tbody td.fk .reference--link:hover {
+    border-color: color-mix(in oklch, var(--chip-color) 55%, transparent);
+  }
+}
+
+.table-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--pk-node-bg-2);
+  border: 1px solid var(--pk-node-border);
+  color: var(--pk-fg);
+  font: 500 10.5px var(--pk-font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* Aggregate chips that take over the subtoolbar while an all-numeric
+   cell selection is active. */
+.app-node-subtoolbar .selection-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
+
+  .stat-chip {
+    --chip-color: var(--pk-fg-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: 1px solid color-mix(in oklch, var(--chip-color) 28%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--chip-color) 11%, transparent);
+
+    svg {
+      flex: none;
+      color: var(--pk-fg-subtle);
+    }
+
+    .label {
+      color: var(--pk-fg-subtle);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .value {
+      color: var(--pk-fg);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}
+
+.col-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .col-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--pk-fg);
+    font: 500 11px var(--pk-font-mono);
+  }
+  .col-type {
+    font: 400 9.5px var(--pk-font-mono);
+    color: var(--pk-fg-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.result-edge-handle {
+  background: var(--pk-accent-soft);
+  border: 0;
+  border-radius: 2px;
+  cursor: crosshair;
+  transform: none;
+  min-width: 0;
+  min-height: 0;
+  opacity: 0.05;
+  transition:
+    background 0.12s ease-out,
+    opacity 0.12s ease-out;
+  z-index: 1;
+}
+
+.result-edge-handle--top,
+.result-edge-handle--bottom {
+  width: 50%;
+  height: 4px;
+  left: 25%;
+  right: auto;
+}
+
+.result-edge-handle--left,
+.result-edge-handle--right {
+  width: 4px;
+  height: 50%;
+  top: 25%;
+  bottom: auto;
+}
+
+.result-edge-handle--top {
+  top: -12px;
+}
+.result-edge-handle--bottom {
+  bottom: -12px;
+}
+.result-edge-handle--left {
+  left: -12px;
+}
+.result-edge-handle--right {
+  right: -12px;
+}
+
+.result-edge-handle:hover {
+  background: var(--pk-accent);
+  opacity: 1;
+}
+
+/* --- merged from shapes/Result/ResultShape.css --- */
+.no-results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--pk-fg-muted);
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+}
+
+th.header {
+  background: var(--pk-node-bg) !important;
+  color: var(--pk-fg-muted) !important;
+}
+
+th.header.inbound,
+.cell.inbound {
+  color: var(--pk-yellow);
+}
+
+th.header.outbound,
+.cell.outbound {
+  color: var(--pk-blue);
+}
+
+.cell.inbound:hover,
+.cell.outbound:hover {
+  background: var(--pk-accent-bg) !important;
+  cursor: pointer;
+}
+
+.cell.even {
+  background: var(--pk-node-bg);
+}
+
+td.editable {
+  cursor: cell;
+}
+
+td.editing {
+  padding: 0 !important;
+  position: relative;
+  outline: 2px solid var(--pk-accent);
+  outline-offset: -2px;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px var(--pk-accent-line);
+
+  &.error {
+    outline-color: var(--pk-red);
+    box-shadow: 0 2px 12px var(--pk-red-soft);
+  }
+}
+
+.edit-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.edit-input {
+  width: 100%;
+  height: 100%;
+  min-height: 24px;
+  padding: 4px 8px;
+  margin: 0;
+  border: none;
+  background: var(--pk-node-bg);
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+  /* The td forbids selection; the editor must stay selectable. */
+  user-select: text;
+  -webkit-user-select: text;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.edit-row {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+
+  .edit-input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.edit-clear-null {
+  flex: 0 0 auto;
+  padding: 0 8px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--pk-fg-subtle);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  outline: none;
+
+  &:hover:not(:disabled) {
+    color: var(--pk-red);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.bool-select {
+  width: 100%;
+  height: 100%;
+  min-height: 24px;
+  padding: 4px 8px;
+  margin: 0;
+  border: none;
+  background: var(--pk-node-bg);
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  appearance: auto;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.edit-error {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 4px 8px;
+  background: var(--pk-red);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.3;
+  border-radius: 3px;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+.column-menu-dropdown {
+  background: var(--pk-node-bg) !important;
+  border: 1px solid var(--pk-node-border) !important;
+  border-radius: var(--pk-radius-card) !important;
+  box-shadow: var(--pk-node-shadow) !important;
+  padding: 4px !important;
+  font-family: var(--pk-font-sans) !important;
+}
+
+.column-menu-label {
+  padding: 6px 10px 4px !important;
+  color: var(--pk-fg-subtle) !important;
+  font-family: var(--pk-font-mono) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  text-transform: lowercase !important;
+  letter-spacing: 0.02em !important;
+}
+
+.column-menu-item {
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  color: var(--pk-fg) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  transition:
+    background 0.12s ease-out,
+    color 0.12s ease-out !important;
+
+  &:hover,
+  &[data-hovered] {
+    background: var(--pk-node-bg-2) !important;
+    color: var(--pk-fg) !important;
+  }
+}
+
+.column-menu-item-section {
+  color: var(--pk-fg-muted) !important;
+}
+
+.column-menu-item:hover .column-menu-item-section,
+.column-menu-item[data-hovered] .column-menu-item-section {
+  color: var(--pk-accent-soft) !important;
+}
+
+.variable-suggest {
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  box-shadow: var(--pk-node-shadow);
+  padding: 4px;
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.variable-suggest-item {
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--pk-fg);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 0.12s ease-out,
+    color 0.12s ease-out;
+
+  &:hover,
+  &.selected {
+    background: var(--pk-accent-bg);
+    color: var(--pk-accent-soft);
+  }
+}
+
+/* --- merged from shapes/Result/ResultTable/Cell.css --- */
+.reference {
+  --chip-color: var(--pk-fg-muted);
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border: 1px solid color-mix(in oklch, var(--chip-color) 28%, transparent);
+  border-radius: 5px;
+  background: color-mix(in oklch, var(--chip-color) 11%, transparent);
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.reference--link {
+  cursor: pointer;
+}
+
+.cell-bool-true {
+  color: var(--pk-blue);
+  font-style: italic;
+}
+
+.cell-bool-false {
+  color: var(--pk-red);
+  font-style: italic;
+}
+
+.cell-null {
+  color: var(--pk-fg-muted);
+  font-style: italic;
+}
+
+/* Search match highlight — must beat hover / selected / even backgrounds. */
+.app-node table tbody tr td.search-match,
+.app-node table tbody tr:hover td.search-match,
+.app-node table tbody tr.selected td.search-match,
+.app-node table tbody tr.selected:hover td.search-match {
+  background: color-mix(in oklab, var(--pk-node-bg-2) 90%, transparent 10%);
+}
+
+/* Cell-grid selection — after search-match so source order wins over its background. */
+.app-node table tbody tr td.cell-selected,
+.app-node table tbody tr td.cell-selected.search-match {
+  background: var(--pk-row-selected-bg);
+}
+.app-node table tbody tr:hover td.cell-selected,
+.app-node table tbody tr:hover td.cell-selected.search-match {
+  background: var(--pk-row-selected-bg-hover);
+}
+
+/* Cells default to the grid-selection cursor (plain drag selects). While Shift
+   is held the gesture switches to row selection, so the cursor does too. */
+.row-cursor table tbody td {
+  cursor: pointer;
+}
+
+/* Cmd/Ctrl held: a drag moves the node, so everything in the body reads as
+   grabbable rather than selectable. */
+.move-cursor,
+.move-cursor table tbody td,
+.move-cursor table thead th,
+.move-cursor .reference--link {
+  cursor: grab;
+}
+
+/* Selection outline — a pseudo-element border on the boundary cells traces the
+   whole selection without disturbing layout. Interior cells get no sel-* class,
+   so only the outer edge is drawn; corner cells round the shared outer corner.
+   The `td` is positioned so the pseudo-element anchors to it. */
+.app-node table tbody td {
+  position: relative;
+}
+.app-node table tbody td.sel-top::after,
+.app-node table tbody td.sel-right::after,
+.app-node table tbody td.sel-bottom::after,
+.app-node table tbody td.sel-left::after {
+  content: "";
+  position: absolute;
+  /* Sit just outside the cells and overlap neighbours so segments join seamlessly. */
+  inset: -1.5px;
+  pointer-events: none;
+  /* Above the ghost outline (z-index 1) so a solid edge wins where they overlap. */
+  z-index: 2;
+}
+.app-node table tbody td.sel-top::after {
+  border-top: 1.5px solid var(--pk-accent);
+}
+.app-node table tbody td.sel-bottom::after {
+  border-bottom: 1.5px solid var(--pk-accent);
+}
+.app-node table tbody td.sel-left::after {
+  border-left: 1.5px solid var(--pk-accent);
+}
+.app-node table tbody td.sel-right::after {
+  border-right: 1.5px solid var(--pk-accent);
+}
+.app-node table tbody td.sel-top.sel-left::after {
+  border-top-left-radius: 7px;
+}
+.app-node table tbody td.sel-top.sel-right::after {
+  border-top-right-radius: 7px;
+}
+.app-node table tbody td.sel-bottom.sel-left::after {
+  border-bottom-left-radius: 7px;
+}
+.app-node table tbody td.sel-bottom.sel-right::after {
+  border-bottom-right-radius: 7px;
+}
+
+/* Ghost outline — a dashed, dimmer hover preview of what a click/drag would
+   select (a cell, the whole column from its header, or the row while Shift is
+   held). Mirrors the selection outline above but on ::before, sitting under it. */
+.app-node table tbody td.gh-top::before,
+.app-node table tbody td.gh-right::before,
+.app-node table tbody td.gh-bottom::before,
+.app-node table tbody td.gh-left::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  pointer-events: none;
+  z-index: 1;
+}
+.app-node table tbody td.gh-top::before {
+  border-top: 1.5px dashed var(--pk-accent-line);
+}
+.app-node table tbody td.gh-bottom::before {
+  border-bottom: 1.5px dashed var(--pk-accent-line);
+}
+.app-node table tbody td.gh-left::before {
+  border-left: 1.5px dashed var(--pk-accent-line);
+}
+.app-node table tbody td.gh-right::before {
+  border-right: 1.5px dashed var(--pk-accent-line);
+}
+.app-node table tbody td.gh-top.gh-left::before {
+  border-top-left-radius: 7px;
+}
+.app-node table tbody td.gh-top.gh-right::before {
+  border-top-right-radius: 7px;
+}
+.app-node table tbody td.gh-bottom.gh-left::before {
+  border-bottom-left-radius: 7px;
+}
+.app-node table tbody td.gh-bottom.gh-right::before {
+  border-bottom-right-radius: 7px;
+}
+
+/* Header-hover cue: tint the column name so it reads as clickable (selects column). */
+.app-node table thead th:hover .col-name {
+  color: var(--pk-accent-soft);
+}
+
+/* Highlight the matched characters within a cell, mirroring the command palette. */
+.app-node table tbody td mark.match {
+  background: transparent;
+  color: var(--pk-fg);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--pk-accent);
+  text-underline-offset: 2px;
+}
+
+.result-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  .result-search-icon {
+    flex-shrink: 0;
+    color: var(--pk-fg-subtle);
+  }
+
+  .result-search-input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--pk-fg);
+    font: 400 12px var(--pk-font-mono);
+    outline: none;
+
+    &::placeholder {
+      color: var(--pk-fg-subtle);
+    }
+  }
+
+  .result-search-count {
+    flex-shrink: 0;
+    color: var(--pk-fg-subtle);
+    font: 400 11px var(--pk-font-mono);
+    white-space: nowrap;
+  }
+}
+
+/* Pivot (record) view — one vertical name→value table per row. */
+.result-pivot {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 12px;
+}
+
+.result-pivot table {
+  width: 100%;
+}
+
+.pivot-record-header {
+  padding: 0 2px 6px;
+  color: var(--pk-fg-subtle);
+  font: 500 11px var(--pk-font-mono);
+  letter-spacing: 0.02em;
+}
+
+.result-pivot .pivot-field {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: top;
+  text-align: left;
+  padding: 7px 14px !important;
+  border-bottom: 1px solid var(--pk-node-border) !important;
+  border-right: 1px solid var(--pk-node-border);
+  color: var(--pk-fg-muted);
+  font-weight: 500;
+  user-select: text;
+  -webkit-user-select: text;
+}

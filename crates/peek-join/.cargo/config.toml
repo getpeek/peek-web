@@ -1,0 +1,12 @@
+# getrandom 0.3 needs the JS backend selected at build time for the browser.
+# Mirrors the iroh-docs / iroh-blobs wasm_build CI jobs.
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
+
+# `ring` (the tls-ring crypto backend) compiles C sources; the wasm target
+# needs a wasm-capable clang. macOS system clang has no wasm target, so point
+# at Homebrew LLVM. On Linux/CI, override these env vars (e.g. to `clang` /
+# `llvm-ar` on PATH) since the Homebrew path won't exist.
+[env]
+CC_wasm32_unknown_unknown = "/opt/homebrew/opt/llvm/bin/clang"
+AR_wasm32_unknown_unknown = "/opt/homebrew/opt/llvm/bin/llvm-ar"

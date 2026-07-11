@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "build:wasm": "cd crates/peek-join && wasm-pack build --target web --release --out-dir pkg && mkdir -p ../../public/peek-join && cp pkg/peek_join.js pkg/peek_join_bg.wasm ../../public/peek-join/",
     "build": "next build",
     "start": "next start",
     "lint": "oxlint",
@@ -12,20 +13,31 @@
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
+    "@mantine/hooks": "^9.2.1",
+    "@monaco-editor/react": "^4.7.0",
     "@neondatabase/serverless": "^1.1.0",
+    "@tabler/icons-react": "^3.44.0",
+    "@tanstack/react-virtual": "^3.13.24",
     "@vercel/analytics": "^2.0.1",
     "@xyflow/react": "^12.11.0",
+    "fuzzysort": "^3.1.0",
+    "jotai": "^2.20.0",
     "marked": "^18.0.5",
+    "nanoid": "^5.1.11",
     "next": "16.2.7",
     "perfect-freehand": "^1.2.3",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "sql-formatter": "^15.7.4"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "monaco-editor": "^0.55.1",
     "oxfmt": "^0.49.0",
     "oxlint": "^1.68.0",
     "typescript": "^5"

@@ -1,0 +1,94 @@
+.react-flow {
+  background: var(--pk-canvas-bg);
+}
+
+.react-flow.connecting,
+.react-flow.connecting *,
+.react-flow:has(.react-flow__node.dragging),
+.react-flow:has(.react-flow__node.dragging) * {
+  user-select: none;
+}
+
+body.is-rubber-band-selecting,
+body.is-rubber-band-selecting * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* ============================================================
+   Interaction-time paint reduction
+   While panning / zooming / dragging, `useInteractionState` sets
+   `data-interacting` on the root. We trade visual fidelity for paint
+   cost *only during motion*: drop the shadow transition, flatten the
+   blurred shadows to a cheap single-layer one, and pause the infinite
+   animations that would otherwise repaint every frame. Everything
+   restores the moment the canvas is still.
+   ============================================================ */
+.react-flow[data-interacting] .app-node {
+  transition: none;
+  box-shadow: none;
+}
+
+.react-flow[data-interacting] .app-node.selected,
+.react-flow[data-interacting] .react-flow__node.connected .app-node {
+  box-shadow: var(--pk-node-shadow-cheap);
+}
+
+.react-flow[data-interacting] .app-node.is-live::before,
+.react-flow[data-interacting] .react-flow__edge.connection-active .react-flow__edge-path,
+.react-flow[data-interacting] .react-flow__edge.flowing .react-flow__edge-path,
+.react-flow[data-interacting] .react-flow__edge.query-live .react-flow__edge-path {
+  animation-play-state: paused;
+}
+
+/* Entry: transform/opacity keep running on the compositor; the box-shadow
+   glow pauses during motion and resumes when the canvas is still. */
+.react-flow[data-interacting] .react-flow__node.node-entering .app-node {
+  animation-play-state: running, paused;
+}
+
+/* Hint the single transformed pane onto its own compositor layer for the
+   gesture so panning is a GPU translate, not a repaint. Scoped to interaction
+   only — no permanent layer/memory cost at rest. */
+.react-flow[data-interacting] .react-flow__viewport {
+  will-change: transform;
+}
+
+/* Promote the node being dragged onto its own compositor layer so moving it is
+   a GPU translate of a cached texture, not a re-rasterization of its content
+   every frame. Without this, drag cost scales with the node's DOM — e.g. a
+   result table's cell/column count. Scoped to `.dragging` (the drag only), so
+   the layer is created on grab and released on drop — no permanent cost. */
+.react-flow__node.dragging {
+  will-change: transform;
+}
+
+/* Isolate the result table onto its own persistent compositing layer. Moving or
+   panning *anything else* then re-composites its cached texture instead of
+   repainting the table, and dragging the result node itself becomes a cheap GPU
+   translate of that texture. The node clips (overflow: hidden), so the layer is
+   bounded to the node box — not the tall virtual scroll content. No content is
+   hidden, so nothing flashes.
+
+   Scoped to result nodes: `transform` makes `.app-node` a containing block for
+   `position: fixed` descendants, which would mis-place Monaco's overflow widgets
+   in query nodes. Result menus are all portaled, so result is safe. */
+.react-flow__node-result .app-node {
+  transform: translateZ(0);
+}
+
+/* Rubber-band selection box. Driven imperatively from `useRubberBandSelect`
+   (transform/size written on the ref), so it never goes through React state.
+   Positioned via `transform` to keep updates on the compositor. */
+.rubber-band-rect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  pointer-events: none;
+  border: 1px dashed var(--pk-accent);
+  background: var(--pk-accent-bg);
+  border-radius: 4px;
+  will-change: transform, width, height;
+}
