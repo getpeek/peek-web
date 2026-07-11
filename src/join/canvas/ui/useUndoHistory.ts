@@ -40,6 +40,11 @@ export function useUndoHistory() {
   }, [loadEpoch, setHistory]);
 
   useEffect(() => {
+    // Web-only guard: a guest document starts with no pages until the host's
+    // state syncs in, so there may be nothing to snapshot yet.
+    if (!page) {
+      return;
+    }
     if (isUndoRedoRef.current) {
       const snap = makeSnapshot(page);
       lastStableRef.current = {
@@ -114,7 +119,7 @@ export function useUndoHistory() {
   const undo = useCallback(() => {
     const pageHist = history[pageId];
     const previous = pageHist?.past.at(-1);
-    if (!pageHist || !previous) {
+    if (!page || !pageHist || !previous) {
       return;
     }
 
@@ -136,7 +141,7 @@ export function useUndoHistory() {
   const redo = useCallback(() => {
     const pageHist = history[pageId];
     const next = pageHist?.future.at(-1);
-    if (!pageHist || !next) {
+    if (!page || !pageHist || !next) {
       return;
     }
 

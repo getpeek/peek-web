@@ -4,8 +4,13 @@ Browser guest client for Peek multiplayer. Compiles to wasm and dials a
 `DocTicket` shared by a Peek desktop host, syncing the canvas doc over iroh
 (relay + WebTransport). Powers `getpeek.dev/join/{ticket}`.
 
-A guest is **view-only**: it mirrors the host's canvas, shows/sends cursors over
-gossip, and can ask the host to run queries via `exec-requests/<id>` doc entries.
+A guest is a **full read-write peer**: it mirrors the host's canvas, edits it
+(generic `docPut`/`docDel` doc writes — the TS layer diffs local mutations into
+per-key operations), shows/sends cursors over gossip, and asks the host to run
+queries (`exec-requests/<id>`) and agent conversations (`agent-requests/<id>`)
+via doc entries. `docPut` must never write an empty value — zero-length content
+is indistinguishable from a tombstone on the receiving side — and `docDel` is a
+**prefix** delete, matching the desktop's `mp_doc_del`.
 
 ## Build
 
@@ -40,11 +45,22 @@ const events = session.events(); // ReadableStream, read once
 // events yield { type: "entry"|"delete"|"syncFinished"|"gossip"|"peerUp"|"peerDown", ... }
 await session.sendGossip(JSON.stringify(cursor));
 await session.requestExec(nodeId, ["select 1"]);
+await session.docPut("pages/<pageId>/nodes/<nodeId>", JSON.stringify(node));
+await session.docDel("pages/<pageId>/nodes/<nodeId>"); // prefix delete
 ```
 
 ## Protocol parity (must match the desktop app exactly)
 
 - Gossip topic: `blake3("peek/multiplayer:" ++ namespace_id)` — see `src/protocol.rs`
   and `peek/src-tauri/src/multiplayer/session.rs`.
-- Key scheme + value JSON: `peek/src/multiplayer/diff.ts`.
+- Key scheme + value JSON: `peek/src/multiplayer/keys.ts` (+ `diff.ts`); the web-side
+  mirror is `../../src/join/multiplayer/diff.ts`.
 - Subscribe before `start_sync` (see `src/session.rs`), or the guest renders empty.
+
+Full architecture + protocol docs (incl. the agent proxy contract) live in the
+desktop repo: `peek/docs/multiplayer.md`, "Browser guest (peek-web)".
+
+Note: rustc emits bulk-memory ops for wasm32 now, so `Cargo.toml` passes
+`--enable-bulk-memory --enable-nontrapping-float-to-int` to wasm-opt via
+`[package.metadata.wasm-pack.profile.release]` — without it the release build
+fails validation.
