@@ -11,6 +11,7 @@ import {
   variableHoverMessage,
   variablesByModelUri,
 } from "./variableProvider";
+import { attachLspDocumentSync, ensureLspProvider } from "./lspProvider";
 import { effectiveThemeAtom } from "../../../../state";
 import { editorThemeForUiTheme } from "../../../../themes/editorTheme";
 
@@ -143,6 +144,8 @@ export const SqlEditor = ({
             editorRef.current = editor;
             monaco.editor.setTheme(theme);
             ensureVariableProvider(monaco);
+            ensureLspProvider(monaco);
+            const lspSubs = attachLspDocumentSync(monaco, editor);
             const model = editor.getModel();
             if (model) {
               variablesByModelUri.set(model.uri.toString(), Object.keys(variablesRef.current));
@@ -160,6 +163,9 @@ export const SqlEditor = ({
             const disposeSub = editor.onDidDispose(() => {
               contentSub.dispose();
               focusSub.dispose();
+              for (const sub of lspSubs) {
+                sub.dispose();
+              }
               editorDom?.removeEventListener("mouseenter", syncScale);
               if (model) {
                 variablesByModelUri.delete(model.uri.toString());

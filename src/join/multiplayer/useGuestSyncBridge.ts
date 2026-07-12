@@ -19,6 +19,7 @@ import { joinSession, type GuestEvent, type PeekJoinSession } from "../wasmClien
 import { applyOperation, applyResultOperation } from "./diffApply";
 import { diffDocs, keyKind } from "./diff";
 import { handleAgentGossip, handleAgentRequestDelete } from "./agentProxy";
+import { handleLspResponse } from "./lspProxy";
 import {
   guestErrorAtom,
   guestIdentityAtom,
@@ -46,7 +47,7 @@ function applyDocOperation(store: Store, op: Operation): void {
   }
 }
 
-// exec/agent request keys are host-side concerns on the way in; they fall
+// exec/agent/lsp request keys are host-side concerns on the way in; they fall
 // through both routers untouched.
 function routeEntry(store: Store, key: string, value: string): void {
   const kind = keyKind(key);
@@ -54,6 +55,8 @@ function routeEntry(store: Store, key: string, value: string): void {
     applyDocOperation(store, { kind: "put", key, value });
   } else if (kind === "result") {
     store.set(resultsAtom, r => applyResultOperation(r, { kind: "put", key, value }));
+  } else if (kind === "lsp-response") {
+    handleLspResponse(key, value);
   } else if (kind === "schema") {
     try {
       store.set(schemaAtom, JSON.parse(value) as Schema);

@@ -1,8 +1,8 @@
 "use client";
 
 // Trimmed desktop MonacoManager: warms Monaco up before the first Query node
-// mounts and registers the editor themes. The desktop LSP provider is omitted
-// on the web (no language server to talk to).
+// mounts, registers the editor themes and the LSP completion provider — the
+// language server runs on the desktop host, reached over the multiplayer doc.
 
 import { useRef } from "react";
 import Editor, { Monaco } from "@monaco-editor/react";
@@ -10,6 +10,7 @@ import type { editor } from "monaco-editor";
 import { rosePineTheme } from "../../../../themes/rosePineTheme";
 import { rosePineDawnTheme } from "../../../../themes/rosePineDawnTheme";
 import { terminalTheme } from "../../../../themes/terminalTheme";
+import { ensureLspProvider } from "./lspProvider";
 
 export const MonacoManager = () => {
   const monacoRef = useRef<Monaco | null>(null);
@@ -38,6 +39,7 @@ export const MonacoManager = () => {
           monaco.editor.defineTheme("rose-pine", rosePineTheme);
           monaco.editor.defineTheme("rose-pine-dawn", rosePineDawnTheme);
           monaco.editor.defineTheme("terminal", terminalTheme);
+          ensureLspProvider(monaco);
         }}
         options={{
           readOnly: false,
