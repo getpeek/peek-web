@@ -1,68 +1,18 @@
 import Editor, { Monaco } from "@monaco-editor/react";
-import type { editor, languages } from "monaco-editor";
+import type { editor } from "monaco-editor";
 import "./editor.css";
 import { useEffect, useRef } from "react";
 import { useStore } from "@xyflow/react";
 import { useAtomValue } from "jotai";
 import { scanVariableSites, type VariableValue } from "../../../variables";
 import { getOverflowWidgetsDomNode, syncOverflowWidgetsScale } from "./overflowWidgets";
+import {
+  ensureVariableProvider,
+  variableHoverMessage,
+  variablesByModelUri,
+} from "./variableProvider";
 import { effectiveThemeAtom } from "../../../../state";
 import { editorThemeForUiTheme } from "../../../../themes/editorTheme";
-
-const variablesByModelUri = new Map<string, string[]>();
-let variableProviderRegistered = false;
-
-function variableHoverMessage(value: VariableValue): string {
-  const values = Array.isArray(value) ? value : [value];
-  if (values.length === 1) {
-    return `\`${values[0].replaceAll("`", "\\`")}\``;
-  }
-  return `${values.length} values`;
-}
-
-function ensureVariableProvider(monaco: Monaco) {
-  if (variableProviderRegistered) {
-    return;
-  }
-  variableProviderRegistered = true;
-  const provider: languages.CompletionItemProvider = {
-    triggerCharacters: ["@"],
-    provideCompletionItems(model, position) {
-      const uri = model.uri.toString();
-      const variables = variablesByModelUri.get(uri) ?? [];
-      if (variables.length === 0) {
-        return { suggestions: [] };
-      }
-
-      const lineText = model.getLineContent(position.lineNumber);
-      const before = lineText.slice(0, position.column - 1);
-      const match = before.match(/@(\w*)$/u);
-      if (!match) {
-        return { suggestions: [] };
-      }
-
-      const word = model.getWordUntilPosition(position);
-      const range = {
-        startLineNumber: position.lineNumber,
-        endLineNumber: position.lineNumber,
-        startColumn: position.column - match[1].length,
-        endColumn: word.endColumn,
-      };
-
-      return {
-        suggestions: variables.map(v => ({
-          label: `@${v}`,
-          kind: monaco.languages.CompletionItemKind.Variable,
-          insertText: v,
-          range,
-          detail: "variable",
-          sortText: `0_${v}`,
-        })),
-      };
-    },
-  };
-  monaco.languages.registerCompletionItemProvider("sql", provider);
-}
 
 export const SqlEditor = ({
   query,
@@ -155,13 +105,22 @@ export const SqlEditor = ({
     if (!ed) {
       return;
     }
+    // While the local user is typing, the editor — not the `query` prop — is the
+    // source of truth. In a multiplayer session inbound doc-updates for this node
+    // keep streaming in as the user types (the host re-emits the node), and
+    // reconciling them here would `setValue` the model back to a value that lags
+    // the keystroke, dropping the character just typed (a lone space is the most
+    // visible case). Reconcile only when the editor isn't focused; local edits
+    // already flow out through `onChange`.
+    if (ed.hasTextFocus()) {
+      return;
+    }
     if (ed.getValue() !== query) {
       // `setValue` fires Monaco's content-change event synchronously, which
-      // `@monaco-editor/react` surfaces through `onChange`. Without this guard
-      // that reads back as a user edit and re-enters `onQueryChange` — locally
-      // harmless, but under multiplayer a peer's echo of our own write would
-      // ping-pong (echo → setValue → onChange → push → echo …) until React
-      // hits "Maximum update depth exceeded" and keystrokes get dropped.
+      // `@monaco-editor/react` surfaces through `onChange`. Suppress that so a
+      // programmatic reconcile isn't re-emitted as a user edit (which, echoed
+      // back, would ping-pong until React throws "Maximum update depth
+      // exceeded").
       applyingExternalRef.current = true;
       try {
         ed.setValue(query);
@@ -252,6 +211,11 @@ export const SqlEditor = ({
             acceptSuggestionOnCommitCharacter: true,
             acceptSuggestionOnEnter: "on",
             accessibilitySupport: "off",
+            // In Chromium Monaco's EditContext focus target is a plain <div>,
+            // which xyflow's window-level Space/Backspace handlers don't
+            // recognize as an input — they preventDefault keystrokes meant for
+            // the editor. Use the hidden textarea, like desktop's WKWebView.
+            editContext: false,
             automaticLayout: true,
             fontSize: 14,
             fontFamily: "Monaspace Krypton, SF Mono, Monaco, Inconsolata, Roboto Mono, monospace",
