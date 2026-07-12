@@ -77,6 +77,7 @@ export const SqlEditor = ({
 }) => {
   const ref = useRef<Monaco | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const applyingExternalRef = useRef(false);
   const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null);
   const variablesRef = useRef<Record<string, VariableValue>>(variables ?? {});
   const zoom = useStore(s => s.transform[2]);
@@ -155,7 +156,18 @@ export const SqlEditor = ({
       return;
     }
     if (ed.getValue() !== query) {
-      ed.setValue(query);
+      // `setValue` fires Monaco's content-change event synchronously, which
+      // `@monaco-editor/react` surfaces through `onChange`. Without this guard
+      // that reads back as a user edit and re-enters `onQueryChange` — locally
+      // harmless, but under multiplayer a peer's echo of our own write would
+      // ping-pong (echo → setValue → onChange → push → echo …) until React
+      // hits "Maximum update depth exceeded" and keystrokes get dropped.
+      applyingExternalRef.current = true;
+      try {
+        ed.setValue(query);
+      } finally {
+        applyingExternalRef.current = false;
+      }
     }
   }, [query]);
 
@@ -265,7 +277,12 @@ export const SqlEditor = ({
             renderWhitespace: "none",
             copyWithSyntaxHighlighting: true,
           }}
-          onChange={value => onQueryChange(value ?? "")}
+          onChange={value => {
+            if (applyingExternalRef.current) {
+              return;
+            }
+            onQueryChange(value ?? "");
+          }}
         />
       </div>
     </div>

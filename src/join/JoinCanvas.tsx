@@ -37,10 +37,8 @@ import { CanvasApiPublisher } from "./canvas/CanvasApiPublisher";
 import { AgentNode } from "./canvas/nodes/Agent/AgentNode";
 import { DrawNode } from "./canvas/nodes/Draw/DrawNode";
 import { LiveStroke } from "./canvas/nodes/Draw/LiveStroke";
-import {
-  BarChartPlaceholderNode,
-  TableDefinitionPlaceholderNode,
-} from "./canvas/nodes/PlaceholderNode";
+import { BarChartNode } from "./canvas/nodes/BarChart/BarChartNode";
+import { TableDefinitionNode } from "./canvas/nodes/TableDefinition/TableDefinitionNode";
 import { QueryErrorNode } from "./canvas/nodes/QueryError/QueryErrorNode";
 import { QueryNode } from "./canvas/nodes/Query/QueryNode";
 import { ResultNode } from "./canvas/nodes/Result/ResultNode";
@@ -80,9 +78,9 @@ const nodeTypes = {
   result: ResultNode,
   "result-insert-form": ResultInsertFormNode,
   agent: AgentNode,
-  barchart: BarChartPlaceholderNode,
+  barchart: BarChartNode,
   "query-error": QueryErrorNode,
-  "table-definition": TableDefinitionPlaceholderNode,
+  "table-definition": TableDefinitionNode,
   text: TextNode,
   variable: VariableNode,
   draw: DrawNode,

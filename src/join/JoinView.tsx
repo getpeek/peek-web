@@ -28,7 +28,6 @@ export function JoinView({ ticket }: { ticket: string }) {
       <JoinCanvas />
 
       <div className={styles.topbar}>
-        <div className={styles.brand}>Peek — live session</div>
         <div className={`${styles.status} ${styles[status]}`}>
           <span className={styles.dot} />
           {STATUS_LABEL[status] ?? status}
