@@ -93,7 +93,14 @@ fn into_js_readable_stream<T: Serialize>(
     stream: impl n0_future::Stream<Item = T> + 'static,
 ) -> JsReadableStream {
     let stream = n0_future::StreamExt::map(stream, |event| {
-        Ok(serde_wasm_bindgen::to_value(&event).unwrap_or(wasm_bindgen::JsValue::NULL))
+        // The gossip payload is a dynamic `serde_json::Value`; serde-wasm-bindgen
+        // serializes maps as ES `Map` by default, which makes `payload.type`
+        // undefined on the JS side. Emit plain objects so the cursor/presence
+        // fields are readable as normal properties.
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        Ok(event
+            .serialize(&serializer)
+            .unwrap_or(wasm_bindgen::JsValue::NULL))
     });
     ReadableStream::from_stream(stream).into_raw()
 }
