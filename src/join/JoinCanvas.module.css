@@ -21,6 +21,9 @@
 
 .tab,
 .tabActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: none;
   background: transparent;
   color: var(--pk-fg-muted);
@@ -38,4 +41,33 @@
 .tabActive {
   background: var(--pk-accent-bg);
   color: var(--pk-fg);
+}
+
+.pageTabAvatars {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pageTabAvatar {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--pk-node-bg);
+  margin-left: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 8px var(--pk-font-sans);
+  color: #fff;
+  flex-shrink: 0;
+
+  &:first-child {
+    margin-left: 0;
+  }
+}
+
+.pageTabAvatarOverflow {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg-muted);
 }

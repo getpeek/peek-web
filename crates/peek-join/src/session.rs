@@ -7,16 +7,28 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use anyhow::{Context, Result};
 use bytes::Bytes;
-use iroh::EndpointId;
+use iroh::{EndpointAddr, EndpointId};
 use iroh_blobs::api::downloader::{Downloader, Shuffled};
 use iroh_blobs::{Hash, store::mem::MemStore};
-use iroh_docs::{AuthorId, DocTicket, api::Doc, engine::LiveEvent, store::DownloadPolicy};
+use iroh_docs::{
+    AuthorId, DocTicket, api::Doc, engine::LiveEvent, store::DownloadPolicy, store::Query,
+};
 use iroh_gossip::api::{Event as GossipEvent, GossipReceiver, GossipSender};
-use n0_future::{StreamExt, task::AbortOnDropHandle};
+use n0_future::{
+    StreamExt,
+    task::AbortOnDropHandle,
+    time::{Duration, sleep},
+};
 use serde::Serialize;
 
 use crate::node::GuestNode;
 use crate::protocol::{EXEC_REQUESTS_PREFIX, app_gossip_topic};
+
+/// Cap on re-`start_sync` attempts after a failed initial sync before we unblock
+/// the UI with whatever (possibly empty) state we have.
+const MAX_SYNC_ATTEMPTS: u32 = 8;
+/// Cap on per-blob download retries before an entry is dropped from the canvas.
+const MAX_DOWNLOAD_ATTEMPTS: u32 = 5;
 
 /// Events pushed to the JS side over a ReadableStream. Serialized with
 /// serde-wasm-bindgen (`type` tag → discriminant, camelCase fields).
@@ -130,6 +142,15 @@ pub async fn join(ticket_str: &str) -> Result<(GuestSession, async_channel::Rece
     // Same peers act as blob providers for our explicit content downloads.
     let providers = bootstrap_ids.clone();
 
+    // Seed the endpoint address book with the ticket's full addrs (relay +
+    // direct) so gossip's bootstrap dial can reach the host over the relay.
+    // Gossip subscribes by bare EndpointId and resolves the route through these
+    // lookups; in the browser (relay-only, no hole-punching) discovery alone
+    // never finds the host, so without this seed cursor/presence never arrive.
+    for addr in &nodes {
+        node.address_book.add_endpoint_info(addr.clone());
+    }
+
     // `import_namespace` (not `import`) so we can subscribe BEFORE sync starts —
     // see the extended note in the desktop `session.rs::join`. Getting this
     // ordering wrong makes the guest render an empty canvas.
@@ -151,6 +172,8 @@ pub async fn join(ticket_str: &str) -> Result<(GuestSession, async_channel::Rece
 
     let downloader = node.blobs.downloader(&node.endpoint);
     let sub_task = AbortOnDropHandle::new(n0_future::task::spawn(subscribe_loop(
+        doc.clone(),
+        nodes.clone(),
         Box::pin(stream),
         node.blobs.clone(),
         downloader,
@@ -186,14 +209,26 @@ pub async fn join(ticket_str: &str) -> Result<(GuestSession, async_channel::Rece
     Ok((session, rx))
 }
 
-/// Ferry remote doc changes to the event stream. iroh-docs' engine only
-/// auto-downloads content the remote reports as `Complete` during sync, and the
-/// host never re-announces `ContentReady` for its own pre-existing content — so
-/// a fresh joiner's content downloads never fire and every entry is stuck with
-/// only its hash. We therefore fetch each blob from the host ourselves via the
-/// blobs `Downloader`, then emit. Fetches run in their own tasks so a large
-/// result blob doesn't stall the rest of the canvas from rendering.
+/// Ferry remote doc changes to the event stream, and make the initial load
+/// resilient. Two iroh-docs behaviours otherwise strand a guest on a blank
+/// canvas with no retry:
+///
+///   1. `SyncFinished` fires for FAILED syncs too (its `result` is an `Err`).
+///      After a failed sync the engine goes Idle and never re-syncs on its own —
+///      the `NewNeighbor` trigger that lands mid initial-sync is dropped. We
+///      inspect the result and re-`start_sync` (with backoff, and again on every
+///      `NeighborUp`) until a sync actually succeeds.
+///   2. Sync reconciles entry *records*, not blob content, and the host never
+///      re-announces content it already had — so relying on the live
+///      `InsertRemote` stream drops any entry whose one-shot download failed. On
+///      the first successful sync we snapshot the whole doc and fetch every blob
+///      ourselves (with retries), so the canvas always fully materializes.
+///
+/// Fetches run in their own tasks so a large result blob doesn't stall the rest
+/// of the canvas from rendering.
 async fn subscribe_loop<S>(
+    doc: Doc,
+    bootstrap: Vec<EndpointAddr>,
     mut stream: S,
     blobs: MemStore,
     downloader: Downloader,
@@ -202,6 +237,9 @@ async fn subscribe_loop<S>(
 ) where
     S: n0_future::Stream<Item = Result<LiveEvent>> + Unpin,
 {
+    let mut synced_ok = false;
+    let mut sync_attempts: u32 = 0;
+
     while let Some(event) = stream.next().await {
         let event = match event {
             Ok(event) => event,
@@ -213,34 +251,67 @@ async fn subscribe_loop<S>(
 
         match event {
             LiveEvent::InsertRemote { from, entry, .. } => {
+                // The initial canvas is loaded by the post-sync snapshot. Until
+                // then, skip per-event downloads: a burst of them over the one
+                // relay link races and starves the snapshot's own fetches.
+                if !synced_ok {
+                    continue;
+                }
                 let key = String::from_utf8_lossy(entry.key()).into_owned();
                 let author = from.to_string();
-                let len = entry.content_len();
-                if len == 0 {
+                if entry.content_len() == 0 {
                     let _ = tx.send(GuestEvent::Delete { key, author }).await;
                     continue;
                 }
-                let hash = entry.content_hash();
-                let blobs = blobs.clone();
-                let downloader = downloader.clone();
-                let providers = providers.clone();
-                let tx = tx.clone();
-                n0_future::task::spawn(async move {
-                    if let Err(err) =
-                        fetch_and_emit(&blobs, &downloader, providers, &tx, hash, &key, author)
-                            .await
-                    {
-                        tracing::warn!(%key, %err, "content fetch failed");
+                spawn_fetch(
+                    &blobs,
+                    &downloader,
+                    &providers,
+                    &tx,
+                    entry.content_hash(),
+                    key,
+                    author,
+                );
+            }
+            LiveEvent::SyncFinished(ev) => match ev.result {
+                Ok(_) => {
+                    tracing::info!("sync-finished ok");
+                    if !synced_ok {
+                        synced_ok = true;
+                        // The live InsertRemote stream is lossy (missed events,
+                        // failed downloads); the snapshot is the source of truth
+                        // that guarantees the full canvas on first load.
+                        reconcile_snapshot(&doc, &blobs, &downloader, &providers, &tx).await;
                     }
-                });
-            }
-            LiveEvent::SyncFinished(_) => {
-                tracing::info!("sync-finished");
-                let _ = tx.send(GuestEvent::SyncFinished).await;
-            }
+                    let _ = tx.send(GuestEvent::SyncFinished).await;
+                }
+                Err(err) => {
+                    tracing::warn!(%err, attempt = sync_attempts, "sync failed");
+                    if synced_ok {
+                        // Already have the canvas; a later failed re-sync is fine.
+                    } else if sync_attempts < MAX_SYNC_ATTEMPTS {
+                        sync_attempts += 1;
+                        sleep(backoff_delay(sync_attempts)).await;
+                        if let Err(err) = doc.start_sync(bootstrap.clone()).await {
+                            tracing::warn!(%err, "re-start_sync failed");
+                        }
+                    } else {
+                        // Stop retrying, but unblock the UI rather than hang on
+                        // the sync spinner forever.
+                        tracing::warn!("sync retries exhausted; surfacing partial state");
+                        let _ = tx.send(GuestEvent::SyncFinished).await;
+                    }
+                }
+            },
             LiveEvent::NeighborUp(_) => {
                 tracing::info!("neighbor-up");
                 let _ = tx.send(GuestEvent::PeerUp).await;
+                // A neighbor arriving mid initial-sync is exactly the trigger
+                // iroh-docs drops internally, so re-sync to recover a dropped
+                // first attempt.
+                if !synced_ok && let Err(err) = doc.start_sync(bootstrap.clone()).await {
+                    tracing::warn!(%err, "re-start_sync on neighbor-up failed");
+                }
             }
             LiveEvent::NeighborDown(_) => {
                 tracing::info!("neighbor-down");
@@ -252,7 +323,91 @@ async fn subscribe_loop<S>(
     }
 }
 
+/// Read the entire current doc and fetch every entry's content ourselves. Runs
+/// once after the first successful sync as the source of truth for the initial
+/// canvas, independent of the lossy live `InsertRemote` + auto-download path.
+async fn reconcile_snapshot(
+    doc: &Doc,
+    blobs: &MemStore,
+    downloader: &Downloader,
+    providers: &[EndpointId],
+    tx: &async_channel::Sender<GuestEvent>,
+) {
+    let stream = match doc.get_many(Query::all()).await {
+        Ok(stream) => stream,
+        Err(err) => {
+            tracing::warn!(%err, "snapshot get_many failed");
+            return;
+        }
+    };
+    // Collect the entry records first so the query stream isn't held open
+    // across the (slow) content downloads.
+    let mut items: Vec<(Hash, String, String)> = Vec::new();
+    let mut stream = Box::pin(stream);
+    while let Some(entry) = stream.next().await {
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(err) => {
+                tracing::warn!(%err, "snapshot entry error");
+                continue;
+            }
+        };
+        if entry.content_len() == 0 {
+            continue;
+        }
+        let key = String::from_utf8_lossy(entry.key()).into_owned();
+        let author = entry.author().to_string();
+        items.push((entry.content_hash(), key, author));
+    }
+    drop(stream);
+
+    // Download one at a time. A burst of concurrent fetches over the single
+    // relay connection is what was collapsing the transfer and leaving the
+    // canvas blank; serial is slower but reliable, and the emitted/failed
+    // counts make the outcome unambiguous in the logs.
+    let total = items.len();
+    let mut emitted: u32 = 0;
+    let mut failed: u32 = 0;
+    for (hash, key, author) in items {
+        match fetch_and_emit(blobs, downloader, providers.to_vec(), tx, hash, &key, author).await {
+            Ok(()) => emitted += 1,
+            Err(err) => {
+                failed += 1;
+                tracing::warn!(%key, %err, "snapshot fetch failed");
+            }
+        }
+    }
+    tracing::info!(total, emitted, failed, "snapshot complete");
+}
+
+/// Download (if needed) and emit one entry's content on its own task. Shared by
+/// the live `InsertRemote` path and the initial snapshot.
+fn spawn_fetch(
+    blobs: &MemStore,
+    downloader: &Downloader,
+    providers: &[EndpointId],
+    tx: &async_channel::Sender<GuestEvent>,
+    hash: Hash,
+    key: String,
+    author: String,
+) {
+    let blobs = blobs.clone();
+    let downloader = downloader.clone();
+    let providers = providers.to_vec();
+    let tx = tx.clone();
+    n0_future::task::spawn(async move {
+        if let Err(err) =
+            fetch_and_emit(&blobs, &downloader, providers, &tx, hash, &key, author).await
+        {
+            tracing::warn!(%key, %err, "content fetch failed");
+        }
+    });
+}
+
 /// Read a blob locally, downloading it from the host first if we don't have it.
+/// The download is retried with backoff: over a relay the blobs connection fails
+/// transiently, and iroh-docs never re-offers content, so a single failed fetch
+/// would drop that node from the canvas permanently.
 async fn fetch_and_emit(
     blobs: &MemStore,
     downloader: &Downloader,
@@ -263,10 +418,25 @@ async fn fetch_and_emit(
     author: String,
 ) -> Result<()> {
     if blobs.get_bytes(hash).await.is_err() {
-        downloader
-            .download(hash, Shuffled::new(providers))
-            .await
-            .map_err(|err| anyhow::anyhow!("download {hash}: {err}"))?;
+        let mut attempt: u32 = 0;
+        loop {
+            attempt += 1;
+            match downloader
+                .download(hash, Shuffled::new(providers.clone()))
+                .await
+            {
+                Ok(_) => break,
+                Err(err) if attempt < MAX_DOWNLOAD_ATTEMPTS => {
+                    tracing::warn!(%key, attempt, %err, "content download failed; retrying");
+                    sleep(backoff_delay(attempt)).await;
+                }
+                Err(err) => {
+                    return Err(anyhow::anyhow!(
+                        "download {hash} after {attempt} attempts: {err}"
+                    ));
+                }
+            }
+        }
     }
     let bytes = blobs
         .get_bytes(hash)
@@ -274,6 +444,12 @@ async fn fetch_and_emit(
         .map_err(|err| anyhow::anyhow!("get_bytes after download: {err}"))?;
     emit_entry(tx, key.to_owned(), author, &bytes).await;
     Ok(())
+}
+
+/// Exponential backoff for sync/download retries: 500ms, 1s, 2s, then 4s.
+fn backoff_delay(attempt: u32) -> Duration {
+    let shift = attempt.saturating_sub(1).min(3);
+    Duration::from_millis(500u64 << shift)
 }
 
 async fn emit_entry(
@@ -305,6 +481,11 @@ async fn gossip_loop(mut receiver: GossipReceiver, tx: async_channel::Sender<Gue
                     })
                     .await;
             }
+            // A gossip neighbor is the prerequisite for receiving any broadcast;
+            // logging membership makes it obvious at runtime whether the swarm
+            // formed (empty inbound gossip == we never got a NeighborUp).
+            Ok(GossipEvent::NeighborUp(id)) => tracing::info!(%id, "gossip neighbor-up"),
+            Ok(GossipEvent::NeighborDown(id)) => tracing::info!(%id, "gossip neighbor-down"),
             Ok(_) => {}
             Err(err) => tracing::warn!("gossip recv error: {err}"),
         }
