@@ -1,15 +1,31 @@
 # Peek Web
 
-The marketing site for **Peek** - a Figma-like GUI database client where users
-place nodes (AI assist, query, result, chart, chat…) on an infinite 2D canvas.
-The product itself is a Tauri/React desktop app; **this repo is the public
-landing page only**. There is no database, no auth, no host bridge here - it is
-a static, content + animation site.
+The public web presence for **Peek** - a Figma-like GUI database client where
+users place nodes (AI assist, query, result, chart, chat…) on an infinite 2D
+canvas. The product itself is a Tauri/React desktop app. This repo is **two
+things**: the marketing/landing site (`src/app/`, `src/landing/`, …) and the
+**lightweight web guest client** (`src/join/`) that guests use to join a
+multiplayer session in the browser (getpeek.dev/join) without installing the
+desktop app. There is no database, no auth, and no host bridge of its own.
 
-The current page is a single cosmic-themed landing page: full-viewport hero with
-a planet/orb behind a giant italic "Peek" wordmark, an **interactive demo
-canvas** that walks through the product flow (Ask → Run → Branch), four feature
-sections, a telemetry stats row, a closing CTA, and a footer.
+The landing page is a single cosmic-themed page: full-viewport hero with a
+planet/orb behind a giant italic "Peek" wordmark, an **interactive demo canvas**
+that walks through the product flow (Ask → Run → Branch), four feature sections,
+a telemetry stats row, a closing CTA, and a footer.
+
+# The guest client & desktop parity
+
+The desktop app at `~/labs/peek` is the **source of truth** for product
+behavior. The guest client under `src/join/` mirrors a subset of the desktop
+canvas — it shares the same conventions, atom shapes, and canvas/wayfinding/region
+code, adapted to the browser (multiplayer guest, no host bridge). Its layout
+under `src/join/canvas/` deliberately parallels the desktop's `src/canvas/`.
+
+**When you change guest-client behavior, keep it in parity with the desktop
+app** — and expect desktop-side changes to be ported here. If you're unsure
+whether a canvas/wayfinding/multiplayer change already exists on the desktop
+side (or vice-versa), check `~/labs/peek` before implementing. Landing-site work
+has no desktop counterpart and this rule doesn't apply to it.
 
 > ⚠️ **This is NOT the Next.js you know** (see `AGENTS.md`). This Next version
 > has breaking changes vs. older releases. Read the relevant guide in

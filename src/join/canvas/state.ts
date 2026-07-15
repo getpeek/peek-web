@@ -115,6 +115,18 @@ function applyUpdater<T>(prev: T, updater: Updater<T>): T {
   return typeof updater === "function" ? (updater as (p: T) => T)(prev) : updater;
 }
 
+// A region with no surviving members has nowhere to live on the canvas, so drop
+// it once its last node is deleted. Returns the same array when nothing changed,
+// so region subscribers don't re-render on ordinary node edits (drag, select).
+function pruneEmptyRegions(regions: RegionState[], nodes: AppNode[]): RegionState[] {
+  if (regions.length === 0) {
+    return regions;
+  }
+  const live = new Set(nodes.map(n => n.id));
+  const kept = regions.filter(r => r.memberIds.some(id => live.has(id)));
+  return kept.length === regions.length ? regions : kept;
+}
+
 export const nodesAtom = atom(
   get => get(activePageAtom).nodes,
   (get, set, updater: Updater<AppNode[]>) => {
@@ -124,11 +136,12 @@ export const nodesAtom = atom(
       return;
     }
     const next = applyUpdater(page.nodes, updater);
+    const regions = page.regions ? pruneEmptyRegions(page.regions, next) : page.regions;
     set(documentAtom, {
       ...doc,
       pages: {
         ...doc.pages,
-        [doc.activePageId]: { ...page, nodes: next },
+        [doc.activePageId]: { ...page, nodes: next, regions },
       },
     });
   },
