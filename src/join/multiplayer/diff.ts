@@ -173,6 +173,14 @@ function diffNodes(
 
   for (const [nodeId, nextNode] of nextById) {
     const prevNode = prevById.get(nodeId);
+    // The agent transcript (data.messages) is host-authoritative and lives on
+    // the node. A guest only reads it, but a whole-node put would let the
+    // guest's lagging/empty copy clobber the host's via last-writer-wins. Sync
+    // an agent node only on creation (so the host learns it exists); never
+    // republish it — its position/size therefore don't propagate from a guest.
+    if (nextNode.type === "agent" && prevNode) {
+      continue;
+    }
     const stripped = stripNode(nextNode);
     if (!prevNode || JSON.stringify(stripNode(prevNode)) !== JSON.stringify(stripped)) {
       ops.push({

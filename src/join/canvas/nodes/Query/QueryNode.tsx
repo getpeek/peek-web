@@ -176,7 +176,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       >
         <NodeHeader
           nodeId={id}
-          name={nodeHeading(data.query) || "untitled.sql"}
+          name={data.description || nodeHeading(data.query) || "untitled.sql"}
           indicator={<NodeIndicator kind='query' />}
         >
           <Tooltip label={isLive ? "Stop live polling" : "Poll every 10s"}>
