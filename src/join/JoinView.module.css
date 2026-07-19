@@ -67,6 +67,19 @@
   color: #fff;
   border: 2px solid var(--pk-bg);
   margin-left: -6px;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.avatar:disabled {
+  cursor: default;
+}
+
+.avatarFollowing {
+  outline: 2px solid var(--pk-accent);
+  outline-offset: 1px;
+  z-index: 1;
 }
 
 .overlay {

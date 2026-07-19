@@ -53,6 +53,9 @@ import { ZoomIndicator } from "./canvas/ui/ZoomIndicator";
 import { PeekKeyboardShortcuts } from "./canvas/ui/KeyboardShortcuts";
 import { RemoteCursorsLayer } from "./multiplayer/RemoteCursorsLayer";
 import { useGuestCursorBroadcast } from "./multiplayer/useGuestCursorBroadcast";
+import { useFollowPeer } from "./multiplayer/useFollowPeer";
+import { useGuestViewportBroadcast } from "./multiplayer/useGuestViewportBroadcast";
+import { followingAuthorAtom } from "./multiplayer/state";
 import { guestStatusAtom } from "./multiplayer/state";
 import type { AppEdge, AppNode, AppNodeType } from "./canvas/types";
 import { useCanvas } from "./canvas/hooks/useCanvas";
@@ -120,7 +123,10 @@ function JoinCanvasInner() {
   const { rectRef: selectionRectRef } = useRubberBandSelect();
   useZoomVariable();
   useGuestCursorBroadcast();
+  useFollowPeer();
+  const broadcastViewport = useGuestViewportBroadcast();
   useGuestAutoFit(live);
+  const setFollowing = useSetAtom(followingAuthorAtom);
   const metaHeld = useMetaKeyHeld();
 
   const onNodesChange = useCallback(
@@ -198,7 +204,15 @@ function JoinCanvasInner() {
         isValidConnection={isValidConnection}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
-        onMoveStart={interaction.begin}
+        onMoveStart={e => {
+          // A real pointer/touch event means the local user grabbed the
+          // canvas; programmatic camera moves (including follow) pass null.
+          if (e) {
+            setFollowing(null);
+          }
+          interaction.begin();
+        }}
+        onMove={(_, vp) => broadcastViewport(vp)}
         onMoveEnd={(_, vp) => {
           setViewport(vp);
           interaction.endDebounced();

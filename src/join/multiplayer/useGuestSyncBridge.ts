@@ -21,6 +21,7 @@ import { diffDocs, keyKind } from "./diff";
 import { handleAgentGossip, handleAgentRequestDelete } from "./agentProxy";
 import { handleLspResponse } from "./lspProxy";
 import {
+  followingAuthorAtom,
   guestErrorAtom,
   guestIdentityAtom,
   guestSessionAtom,
@@ -28,6 +29,7 @@ import {
   multiplayerSyncIssueAtom,
   participantsAtom,
   remoteCursorsAtom,
+  remoteViewportsAtom,
 } from "./state";
 import type { Operation, Peer } from "./types";
 
@@ -97,6 +99,25 @@ function handleGossip(store: Store, author: string, payload: Record<string, unkn
     }
     return;
   }
+  if (type === "viewport") {
+    const centerX = Number(payload.centerX);
+    const centerY = Number(payload.centerY);
+    const zoom = Number(payload.zoom);
+    const pageId = typeof payload.pageId === "string" ? payload.pageId : "";
+    if (!Number.isFinite(centerX) || !Number.isFinite(centerY) || !zoom || !pageId) {
+      return;
+    }
+    store.set(remoteViewportsAtom, prev => ({
+      ...prev,
+      [author]: { centerX, centerY, zoom, pageId, updatedAt: now },
+    }));
+    const peers = store.get(participantsAtom);
+    const peer = peers[author];
+    if (peer && now - peer.lastSeen > CURSOR_LIVENESS_THROTTLE_MS) {
+      store.set(participantsAtom, { ...peers, [author]: { ...peer, lastSeen: now } });
+    }
+    return;
+  }
   if (type === "presence") {
     store.set(participantsAtom, prev => ({
       ...prev,
@@ -120,6 +141,13 @@ function handleGossip(store: Store, author: string, payload: Record<string, unkn
       return rest;
     });
     store.set(remoteCursorsAtom, prev => {
+      if (!(author in prev)) {
+        return prev;
+      }
+      const { [author]: _gone, ...rest } = prev;
+      return rest;
+    });
+    store.set(remoteViewportsAtom, prev => {
       if (!(author in prev)) {
         return prev;
       }
@@ -164,6 +192,18 @@ function pruneStalePeers(store: Store): void {
     for (const [author, cursor] of Object.entries(prev)) {
       if (cursor.updatedAt >= cutoff) {
         next[author] = cursor;
+      } else {
+        changed = true;
+      }
+    }
+    return changed ? next : prev;
+  });
+  store.set(remoteViewportsAtom, prev => {
+    const next: typeof prev = {};
+    let changed = false;
+    for (const [author, vp] of Object.entries(prev)) {
+      if (vp.updatedAt >= cutoff) {
+        next[author] = vp;
       } else {
         changed = true;
       }
@@ -263,6 +303,8 @@ export function useGuestSyncBridge(ticket: string): void {
       store.set(guestErrorAtom, null);
       store.set(participantsAtom, {});
       store.set(remoteCursorsAtom, {});
+      store.set(remoteViewportsAtom, {});
+      store.set(followingAuthorAtom, null);
     };
   }, [ticket]);
 }

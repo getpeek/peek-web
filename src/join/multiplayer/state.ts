@@ -4,7 +4,7 @@
 
 import { atom } from "jotai";
 import type { PeekJoinSession } from "../wasmClient";
-import type { Peer, RemoteCursor, SessionState } from "./types";
+import type { Peer, RemoteCursor, RemoteViewport, SessionState } from "./types";
 
 export type GuestStatus = "connecting" | "syncing" | "live" | "disconnected" | "error";
 
@@ -54,6 +54,13 @@ export const sessionStateAtom = atom<SessionState | null>(get => {
 export const participantsAtom = atom<Record<string, Peer>>({});
 
 export const remoteCursorsAtom = atom<Record<string, RemoteCursor>>({});
+
+// Peers' cameras (center + zoom), keyed by author. Drives follow-mode.
+export const remoteViewportsAtom = atom<Record<string, RemoteViewport>>({});
+
+// Author id of the peer whose camera the local view is currently following,
+// or null when not following. Session-only.
+export const followingAuthorAtom = atom<string | null>(null);
 
 export interface MultiplayerSyncIssue {
   count: number;

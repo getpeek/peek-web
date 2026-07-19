@@ -31,4 +31,14 @@ export interface RemoteCursor {
   updatedAt: number;
 }
 
+// A peer's camera: the flow-space center of their pane plus their zoom.
+// Pane-size independent; broadcast ephemerally over gossip for follow-mode.
+export interface RemoteViewport {
+  centerX: number;
+  centerY: number;
+  zoom: number;
+  pageId: string;
+  updatedAt: number;
+}
+
 export type Operation = { kind: "put"; key: string; value: string } | { kind: "del"; key: string };
