@@ -31,7 +31,7 @@ import {
   remoteCursorsAtom,
   remoteViewportsAtom,
 } from "./state";
-import type { Operation, Peer } from "./types";
+import type { Operation } from "./types";
 
 const PEER_STALE_MS = 15000;
 // Cursor traffic proves a peer is alive; refresh presence at most this often
@@ -172,44 +172,28 @@ function pushOperation(store: Store, session: PeekJoinSession, op: Operation): v
   });
 }
 
+function pruneByTimestamp<T>(
+  prev: Record<string, T>,
+  timestamp: (v: T) => number,
+  cutoff: number,
+): Record<string, T> {
+  let changed = false;
+  const next: Record<string, T> = {};
+  for (const [author, v] of Object.entries(prev)) {
+    if (timestamp(v) >= cutoff) {
+      next[author] = v;
+    } else {
+      changed = true;
+    }
+  }
+  return changed ? next : prev;
+}
+
 function pruneStalePeers(store: Store): void {
   const cutoff = Date.now() - PEER_STALE_MS;
-  store.set(participantsAtom, prev => {
-    const next: Record<string, Peer> = {};
-    let changed = false;
-    for (const [author, peer] of Object.entries(prev)) {
-      if (peer.lastSeen >= cutoff) {
-        next[author] = peer;
-      } else {
-        changed = true;
-      }
-    }
-    return changed ? next : prev;
-  });
-  store.set(remoteCursorsAtom, prev => {
-    const next: typeof prev = {};
-    let changed = false;
-    for (const [author, cursor] of Object.entries(prev)) {
-      if (cursor.updatedAt >= cutoff) {
-        next[author] = cursor;
-      } else {
-        changed = true;
-      }
-    }
-    return changed ? next : prev;
-  });
-  store.set(remoteViewportsAtom, prev => {
-    const next: typeof prev = {};
-    let changed = false;
-    for (const [author, vp] of Object.entries(prev)) {
-      if (vp.updatedAt >= cutoff) {
-        next[author] = vp;
-      } else {
-        changed = true;
-      }
-    }
-    return changed ? next : prev;
-  });
+  store.set(participantsAtom, prev => pruneByTimestamp(prev, p => p.lastSeen, cutoff));
+  store.set(remoteCursorsAtom, prev => pruneByTimestamp(prev, c => c.updatedAt, cutoff));
+  store.set(remoteViewportsAtom, prev => pruneByTimestamp(prev, v => v.updatedAt, cutoff));
 }
 
 export function useGuestSyncBridge(ticket: string): void {

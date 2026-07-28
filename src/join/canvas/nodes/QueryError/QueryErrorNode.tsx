@@ -25,7 +25,7 @@ export function QueryErrorNode({ id, data, selected, width, height }: NodeProps<
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
+      <NodeResizer minWidth={300} minHeight={200} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader

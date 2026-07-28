@@ -50,6 +50,7 @@ const WEB_DEFAULT_KEYMAP: Record<string, string> = {
   "meta-.": "View::ToggleUi",
   "shift-p": "Result::Pivot",
   "meta-g": "Region::GroupSelection",
+  "meta-shift-g": "Region::UngroupSelection",
   r: "Region::OpenPicker",
 };
 
