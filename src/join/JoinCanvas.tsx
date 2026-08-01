@@ -47,7 +47,7 @@ import { TextNode } from "./canvas/nodes/Text/TextNode";
 import { VariableNode } from "./canvas/nodes/Variable/VariableNode";
 import { RegionHalos } from "./canvas/wayfinding/RegionHalos";
 import { WayfindingLayer } from "./canvas/wayfinding/WayfindingLayer";
-import { HideUiDot } from "./canvas/ui/HideUiDot";
+import { BottomRightStack } from "./canvas/ui/BottomRightStack";
 import { Toolbar } from "./canvas/ui/Toolbar";
 import { ZoomIndicator } from "./canvas/ui/ZoomIndicator";
 import { PeekKeyboardShortcuts } from "./canvas/ui/KeyboardShortcuts";
@@ -264,7 +264,7 @@ function JoinCanvasInner() {
         {uiVisible && <ZoomIndicator />}
         <RegionHalos />
         <WayfindingLayer />
-        {!uiVisible && <HideUiDot />}
+        <BottomRightStack />
         <RemoteCursorsLayer />
       </ReactFlow>
       <LiveStroke
